@@ -1,0 +1,2 @@
+Nuc_name,Nuc_posX,Nuc_posY,Nuc_posZ,Nuc_aa,Nuc_aaID,Acid_name,Acid_posX,Acid_posY,Acid_posZ,Acid_aa,Acid_aaID,Base_name,Base_posX,Base_posY,Base_posZ,Base_aa,Base_aaID,Dist_Nuc_Acid,Dist_Acid_Base,Dist_Base_Nuc,Angle_Nuc,Angle_Acid,Angle_Base
+OG,8.788,35.368,48.362,SER,10,OD2,9.237,41.167,53.907,ASP,154,CG,10.051,37.435,53.227,HIS,157,8.035985,3.8797948,5.4346943,25.15851619084947,36.548309903000764,118.29316948555469
