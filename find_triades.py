@@ -11,8 +11,18 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 config = config['default']
 
-directory = config['transformed_location']
+# directory = config['transformed_location']
+directory = config['location']
 output_directory = config['output_location']
+
+"""
+Udaljenosti:
+STDEVx3: 1.42 Nuc-Acid, 1.06 Nuc-Base, 0.98 Base-Acid
+AVG: 7.15- Nuc-Acid, 4.86 - Nuc-Base, 3.64 - Base-Acid
+
+Kutevi:
+STDEVx3: 15.38 Nuc,  41.27Base, 27.84 Acid
+AVG: 26.84 - Nuc, 115.14 - Base, 38.01 - Acid"""
 
 NUC_ACID_MIN = 7.15 - 1.42
 NUC_ACID_MAX = 7.15 + 1.42
@@ -54,7 +64,8 @@ def find_angle(u, v, w):
     c = w - u
 
     try:
-        return math.degrees(math.acos((a * a + b * b - c * c) / (2 * a * b)))
+        return round(math.degrees(
+                        math.acos((a * a + b * b - c * c) / (2 * a * b))), 2)
     except ValueError as e:
         logging.warning(e, u, v, w, a, b, c)
         return -1
@@ -75,6 +86,12 @@ def parse_triangle_descriptors(nuc, base, acid, nuc_angle, acid_angle, base_angl
             + str(nuc_angle) + ',' + str(acid_angle) + ',' + str(base_angle) + '\n')
 
 
+def create_folder():
+    if not os.path.isdir(output_directory):
+        os.makedirs(output_directory)
+    return
+
+
 def write_file(protein, text, descriptor):
     file = open(output_directory + "/" + descriptor + str(protein) + '.csv', 'w')
     file.write(HEADER)
@@ -83,8 +100,9 @@ def write_file(protein, text, descriptor):
     return
 
 
-def store_triads():
+def store_triads(protein_atoms):
     for protein in protein_atoms.keys():
+
         atoms = protein_atoms[protein]
         text_list = []
         similar_text_list = []
@@ -125,8 +143,9 @@ def store_triads():
         write_file(protein, ''.join(similar_text_list), 'similar_')
 
 
-if __name__ == "__main__":
+def find_triades():
     protein_atoms = {}
     store_atoms(protein_atoms)
 
-    store_triads()
+    create_folder()
+    store_triads(protein_atoms)
