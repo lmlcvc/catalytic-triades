@@ -1,13 +1,15 @@
 import os
 import configparser
 
-# Ukloniti svaki atom koji nije:
-# * OG u SER
-# * SG u CYS
-# * CG u HIS/ASP/GLU
-# * OD1 ili OD2
 
 def clean_files():
+    """
+    Removes each atom that doesn't fit triad point criteria.
+    Stores NUC, ACID, BASE points to respective files.
+
+    :return: None
+    """
+
     config = configparser.ConfigParser()
     config.read('config.ini')
     config = config['default']
@@ -25,16 +27,39 @@ def clean_files():
     for filename in os.listdir(dirpath):
         if filename.endswith(".pdb"):
             file_fullname = os.path.join(dirpath, filename)
-            destname = os.path.join(destpath, filename)
+            nuc_path = os.path.join(destpath, 'nuc_' + filename)
+            base_path = os.path.join(destpath, 'base_' + filename)
+            acid_path = os.path.join(destpath, 'acid_' + filename)
 
             with open(file_fullname, 'r') as file:
                 atoms = file.readlines()
-                with open(destname, 'w') as dest:
-                    for key in key_lines:
-                        text = ""
-                        for atom in atoms:
-                            if key in atom[11:20].strip().replace(" ", "") \
-                                    and 'ASN' not in atom[11:20].strip().replace(" ", ""):
-                                text += atom
-                        if len(text) > 0:
-                            dest.write(text)
+
+                with open(nuc_path, 'w') as nuc, \
+                        open(acid_path, 'w') as acid, \
+                        open(base_path, 'w') as base:
+                    nuc_list, acid_list, base_list = [], [], []
+
+                    for atom in atoms:
+                        atom_classificaiton = atom[11:20].strip().replace(" ", "")
+
+                        # add NUCs (OG SER / SG CYS) to NUC list
+                        if "OGSER" in atom_classificaiton \
+                                or "SGCYS" in atom_classificaiton:
+                            nuc_list.append(atom)
+
+                        # add ACIDs (CG HIS / CG ASP / CG GLU) to ACID list
+                        if ("OD1" in atom_classificaiton
+                            or "OD2" in atom_classificaiton) \
+                                and "ASN" not in atom_classificaiton:
+                            acid_list.append(atom)
+
+                        # add BASEs (CG HIS / CG ASP / CG GLU) to BASE list
+                        if "CGHIS" in atom_classificaiton \
+                                or "CGASP" in atom_classificaiton \
+                                or "CGGLU" in atom_classificaiton:
+                            base_list.append(atom)
+
+                    # write atom lists to NUC/ACID/BASE files
+                    nuc.write(''.join(nuc_list))
+                    acid.write(''.join(acid_list))
+                    base.write(''.join(base_list))
