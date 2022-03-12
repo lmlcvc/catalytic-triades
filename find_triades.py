@@ -11,9 +11,10 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 config = config['default']
 
-# directory = config['transformed_location']
-directory = config['location']
+directory = config['transformed_location']
 output_directory = config['output_location']
+
+old_directory = r'C:\Users\Marina\Desktop\Lana\triades\uoop_projekt\transformed_old'
 
 """
 Udaljenosti:
@@ -43,19 +44,56 @@ HEADER = 'Nuc_name,Nuc_posX,Nuc_posY,Nuc_posZ,Nuc_aa,Nuc_aaID,Acid_name,Acid_pos
          'Dist_Acid_Base,Dist_Base_Nuc,Angle_Nuc,Angle_Acid,Angle_Base\n'
 
 
-def store_atoms(protein_atoms_tmp):
+def store_atoms():
+    nuc_atoms, acid_atoms, base_atoms = {}, {}, {}
+
     for filename in os.listdir(directory):
         if filename.endswith('.pdb'):
-            protein = filename[0:4]
-            structure = parser.get_structure(protein, os.path.join(directory, filename))
+            atoms_tmp = []  # stores file's atoms
 
-            atoms_tmp = []
-            for model in structure:
-                for chain in model:
-                    for residue in chain:
-                        for atom in residue:
-                            atoms_tmp.append((atom, residue))
-            protein_atoms_tmp[protein] = atoms_tmp
+            # write NUC atoms to NUC list
+            if filename.startswith('nuc'):
+                protein = filename[4:8]
+                structure = parser.get_structure(protein, os.path.join(directory, filename))
+
+                for model in structure:
+                    for chain in model:
+                        for residue in chain:
+                            for atom in residue:
+                                atoms_tmp.append((atom, residue))
+
+                # store newly created list to NUC dict by protein
+                nuc_atoms[protein] = atoms_tmp
+
+            # write ACID atoms to ACID list
+            if filename.startswith('acid'):
+                protein = filename[5:9]
+                structure = parser.get_structure(protein, os.path.join(directory, filename))
+
+                for model in structure:
+                    for chain in model:
+                        for residue in chain:
+                            for atom in residue:
+                                atoms_tmp.append((atom, residue))
+
+                # store newly created list to NUC dict by protein
+                acid_atoms[protein] = atoms_tmp
+
+            # write BASE atoms to BASE list
+            if filename.startswith('base'):
+                protein = filename[5:9]
+                structure = parser.get_structure(protein, os.path.join(directory, filename))
+
+                for model in structure:
+                    for chain in model:
+                        for residue in chain:
+                            for atom in residue:
+                                atoms_tmp.append((atom, residue))
+
+                # store newly created list to NUC dict by protein
+                base_atoms[protein] = atoms_tmp
+
+    return nuc_atoms, acid_atoms, base_atoms
 
 
 def find_angle(u, v, w):
@@ -65,7 +103,7 @@ def find_angle(u, v, w):
 
     try:
         return round(math.degrees(
-                        math.acos((a * a + b * b - c * c) / (2 * a * b))), 2)
+            math.acos((a * a + b * b - c * c) / (2 * a * b))), 2)
     except ValueError as e:
         logging.warning(e, u, v, w, a, b, c)
         return -1
@@ -100,10 +138,49 @@ def write_file(protein, text, descriptor):
     return
 
 
-def store_triads(protein_atoms):
-    for protein in protein_atoms.keys():
+# TODO: lesser triads found when separating nuc/acid/base than before?
+def store_triads(nuc_atoms, acid_atoms, base_atoms):
+    for protein in nuc_atoms.keys():
 
-        atoms = protein_atoms[protein]
+        nucs = nuc_atoms[protein]
+        acids = acid_atoms[protein]
+        bases = base_atoms[protein]
+
+        text_list = []
+        similar_text_list = []
+
+        for nuc in nucs:
+            for base in bases:
+                for acid in acids:
+
+                    # if triad candidates found, test angles
+                    nuc_angle = find_angle(acid[0], nuc[0], base[0])
+                    acid_angle = find_angle(nuc[0], acid[0], base[0])
+                    base_angle = find_angle(nuc[0], base[0], acid[0])
+
+                    if ((ANGLE_NUC_MIN <= nuc_angle <= ANGLE_NUC_MAX)
+                            and (ANGLE_ACID_MIN <= acid_angle <= ANGLE_ACID_MAX)
+                            and (ANGLE_BASE_MIN <= base_angle <= ANGLE_BASE_MAX)):
+
+                        # if angle fits criteria, test distances
+                        if ((NUC_ACID_MIN <= nuc[0] - acid[0] <= NUC_ACID_MAX)
+                                and (NUC_BASE_MIN <= nuc[0] - base[0] <= NUC_BASE_MAX)
+                                and (ACID_BASE_MIN <= acid[0] - base[0] <= ACID_BASE_MAX)):
+                            # if distances fit, mark as a triad found
+                            text_list.append(
+                                parse_triangle_descriptors(nuc, base, acid, nuc_angle, acid_angle,
+                                                           base_angle))
+
+                        # if distances don't fit but angles do, mark as a similar triangle
+                        else:
+                            similar_text_list.append(parse_triangle_descriptors(nuc, base, acid, nuc_angle,
+                                                                                acid_angle,
+                                                                                base_angle))
+
+        write_file(protein, ''.join(text_list), '')
+        write_file(protein, ''.join(similar_text_list), 'similar_')
+
+        """atoms = protein_atoms[protein]
         text_list = []
         similar_text_list = []
         for nuc in atoms:
@@ -140,12 +217,11 @@ def store_triads(protein_atoms):
                                                                                             acid_angle,
                                                                                             base_angle))
         write_file(protein, ''.join(text_list), '')
-        write_file(protein, ''.join(similar_text_list), 'similar_')
+        write_file(protein, ''.join(similar_text_list), 'similar_')"""
 
 
 def find_triades():
-    protein_atoms = {}
-    store_atoms(protein_atoms)
+    nuc_atoms, acid_atoms, base_atoms = store_atoms()
 
     create_folder()
-    store_triads(protein_atoms)
+    store_triads(nuc_atoms, acid_atoms, base_atoms)
