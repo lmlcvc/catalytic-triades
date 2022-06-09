@@ -5,14 +5,17 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.pardir, 'config.ini'))
-config = config['default']
+config = config['atom']
 
 transpath = config['transformed_location']
 
 if __name__ == "__main__":
+
+    print(transpath)
     # check if files have been transformed
     if not os.path.isdir(transpath) or not os.listdir(transpath):
         cf.clean_files()
 
+
     # find triades and make csv files
-    ft.find_triades()
+    # ft.find_triades()

@@ -21,64 +21,50 @@ def clean_files():
 
     config = configparser.ConfigParser()
     config.read(os.path.join(os.pardir, 'config.ini'))
-    config = config['default']
+    config = config['atom']
 
     directory = config['location']
-    output_directory = config['transformed_location_atom']
-    print(directory)
-    print(output_directory)
+    output_directory = config['transformed_location']
 
     if not os.path.isdir(output_directory):
+        print('here')
         os.makedirs(output_directory)
-
-    nuc_classifications = ['O', 'OD1', 'OD2']
+        print(os.path.isdir(output_directory))
 
     for filename in os.listdir(directory):
         if filename.endswith(".pdb"):
             print(os.path.join(directory, filename))
-            structure = parser.get_structure(filename, os.path.join(directory, filename))
+            file_absolute_path = os.path.join(directory, filename)
 
-            for model in structure:
-                for chain in model:
-                    for residue in chain:
-                        for atom in residue:
-                            # atoms_tmp.append((atom, residue))
-                            print(atom.get_id())
-
-            file_fullname = os.path.join(directory, filename)
             nuc_path = os.path.join(output_directory, 'nuc_' + filename)
             base_path = os.path.join(output_directory, 'base_' + filename)
             acid_path = os.path.join(output_directory, 'acid_' + filename)
 
-            """with open(file_fullname, 'r') as file:
+            with open(file_absolute_path, 'r') as file:
                 atoms = file.readlines()
 
-                with open(nuc_path, 'w') as nuc, \
-                        open(acid_path, 'w') as acid, \
-                        open(base_path, 'w') as base:
+                with open(nuc_path, 'w+') as nuc, \
+                        open(acid_path, 'w+') as acid, \
+                        open(base_path, 'w+') as base:
                     nuc_list, acid_list, base_list = [], [], []
 
                     for atom in atoms:
-                        atom_classificaiton = atom[11:16].strip().replace(" ", "")
+                        if len(atom) > 77:  # only look at rows with proper atom formatting
 
-                        # add NUCs (OG SER / SG CYS) to NUC list
-                        if "OGSER" in atom_classificaiton \
-                                or "SGCYS" in atom_classificaiton:
-                            nuc_list.append(atom)
+                            # add NUCs (any O/S) to NUC list
+                            if atom[13] == "O" \
+                                    or atom[13] == "S":
+                                nuc_list.append(atom)
 
-                        # add ACIDs (CG HIS / CG ASP / CG GLU) to ACID list
-                        if ("OD1" in atom_classificaiton
-                            or "OD2" in atom_classificaiton) \
-                                and "ASN" not in atom_classificaiton:
-                            acid_list.append(atom)
+                            # add ACIDs (any O) to ACID list
+                            if atom[13] == "O":
+                                acid_list.append(atom)
 
-                        # add BASEs (CG HIS / CG ASP / CG GLU) to BASE list
-                        if "CGHIS" in atom_classificaiton \
-                                or "CGASP" in atom_classificaiton \
-                                or "CGGLU" in atom_classificaiton:
-                            base_list.append(atom)
+                            # add BASEs (any N) to BASE list
+                            if atom[13] == "N":
+                                base_list.append(atom)
 
                     # write atom lists to NUC/ACID/BASE files
                     nuc.write(''.join(nuc_list))
                     acid.write(''.join(acid_list))
-                    base.write(''.join(base_list))"""
+                    base.write(''.join(base_list))

@@ -8,8 +8,8 @@ from Bio.PDB.PDBParser import PDBParser
 parser = PDBParser(PERMISSIVE=1, QUIET=True)
 
 config = configparser.ConfigParser()
-config.read('config.ini')
-config = config['default']
+config.read(os.path.join(os.pardir, 'config.ini'))
+config = config['atom']
 
 directory = config['transformed_location']
 output_directory = config['output_location']
