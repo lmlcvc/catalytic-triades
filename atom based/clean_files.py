@@ -27,13 +27,10 @@ def clean_files():
     output_directory = config['transformed_location']
 
     if not os.path.isdir(output_directory):
-        print('here')
         os.makedirs(output_directory)
-        print(os.path.isdir(output_directory))
 
     for filename in os.listdir(directory):
         if filename.endswith(".pdb"):
-            print(os.path.join(directory, filename))
             file_absolute_path = os.path.join(directory, filename)
 
             nuc_path = os.path.join(output_directory, 'nuc_' + filename)
