@@ -121,7 +121,7 @@ def store_triads(protein_candidates):
             nuc_angle = util.find_angle(n2[0], nuc[0], acid[0])
             n1_angle = util.find_angle(acid[0], n1[0], n2[0])
             n2_angle = util.find_angle(acid[0], n2[0], nuc[0])
-            acid_angle = util.find_angle(n2[0], acid[0], nuc[0])
+            acid_angle = util.find_angle(n1[0], acid[0], nuc[0])
 
             if (acid_angle < ANGLE_ACID_MAX) \
                     and (n1_angle < ANGLE_N1_MAX) \
