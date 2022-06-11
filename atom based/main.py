@@ -1,5 +1,5 @@
 import clean_files as cf
-import find_triades as ft
+import find_triads as ft
 import os
 import configparser
 
@@ -17,4 +17,4 @@ if __name__ == "__main__":
 
 
     # find triades and make csv files
-    ft.find_triades()
+    ft.find_triads()

@@ -15,4 +15,4 @@ if __name__ == "__main__":
         cf.clean_files()
 
     # find triades and make csv files
-    ft.find_triades()
+    ft.find_triads()
