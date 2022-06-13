@@ -91,7 +91,8 @@ def find_candidates(nuc_atoms, acid_atoms, base_atoms):
         # NUC must not be the same atom as ACID
         for combination in acid_n1_n2:
             for nuc in nucs:
-                if (combination["acid"] != nuc) and (combination["n2"][0] - nuc[0] < BASEN2_NUC_MAX):
+                if (combination["acid"] != nuc) and (combination["n2"][0] - nuc[0] < BASEN2_NUC_MAX)\
+                        and (combination["acid"][0] - nuc[0] < NUC_ACID_MAX):
                     tmp_dict = {"acid": combination["acid"], "n1": combination["n1"], "n2": combination["n2"],
                                 "nuc": nuc}
                     acid_n1_n2_nuc.append(tmp_dict)
