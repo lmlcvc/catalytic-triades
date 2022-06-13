@@ -18,4 +18,4 @@ if __name__ == "__main__":
 
 
     # find triades and make csv files
-    # ft.find_triads()
+    ft.find_triads()
