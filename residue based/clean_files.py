@@ -48,19 +48,21 @@ def clean_files():
                     nuc_list, acid_list, base_list = [], [], []
 
                     for atom in atoms:
-                        aa_classification = atom[16:20].strip().replace(" ", "")
+                        atom_classification = atom[11:15].strip().replace(" ", "")
+                        if atom_classification == "CB":
+                            aa_classification = atom[16:20].strip().replace(" ", "")
 
-                        # add NUCs (Cys/Ser CB) to NUC list
-                        if aa_classification in NUC_CLASSIFICATION:
-                            nuc_list.append(atom)
+                            # add NUCs (Cys/Ser CB) to NUC list
+                            if aa_classification in NUC_CLASSIFICATION:
+                                nuc_list.append(atom)
 
-                        # add ACIDs (Asp/glu CB) to ACID list
-                        if aa_classification in ACID_CLASSIFICATION:
-                            acid_list.append(atom)
+                            # add ACIDs (Asp/glu CB) to ACID list
+                            if aa_classification in ACID_CLASSIFICATION:
+                                acid_list.append(atom)
 
-                        # add BASEs (His CB) to BASE list
-                        if aa_classification in BASE_CLASSIFICATION:
-                            base_list.append(atom)
+                            # add BASEs (His CB) to BASE list
+                            if aa_classification in BASE_CLASSIFICATION:
+                                base_list.append(atom)
 
                     # write atom lists to NUC/ACID/BASE files
                     nuc.write(''.join(nuc_list))

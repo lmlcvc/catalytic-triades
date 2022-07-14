@@ -13,7 +13,6 @@ if __name__ == "__main__":
 
     # check if files have been transformed
     if not os.path.isdir(transpath) or not os.listdir(transpath):
-        print('here')
         cf.clean_files()
 
 
