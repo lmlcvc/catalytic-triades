@@ -4,7 +4,7 @@ import os
 import configparser
 
 config = configparser.ConfigParser()
-config.read(os.path.join(os.pardir, 'config.ini'))
+config.read('config.ini')
 config = config['default']
 
 transpath = config['transformed_location']
@@ -15,4 +15,4 @@ if __name__ == "__main__":
         cf.clean_files()
 
     # find triades and make csv files
-    ft.find_triades()
+    ft.find_triads()
