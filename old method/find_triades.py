@@ -1,12 +1,14 @@
 """Read transformed files, make an Atom object list for each protein, find triades in each protein."""
 import configparser
+import os
+
 import util
 from Bio.PDB.PDBParser import PDBParser
 
 parser = PDBParser(PERMISSIVE=1, QUIET=True)
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(os.path.join(os.pardir, 'config.ini'))
 config = config['default']
 
 directory = config['transformed_location']
