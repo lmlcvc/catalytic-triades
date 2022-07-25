@@ -1,6 +1,8 @@
 import logging
 import math
 import os
+
+import pandas as pd
 from Bio.PDB.PDBParser import PDBParser
 
 parser = PDBParser(PERMISSIVE=1, QUIET=True)
@@ -94,3 +96,33 @@ def store_atoms(directory):
                 base_atoms[protein] = atoms_tmp
 
     return nuc_atoms, acid_atoms, base_atoms
+
+
+def store_triads_protein(directory, similar=True):
+    protein_df = {}
+
+    for filename in os.listdir(directory):
+        if filename.startswith('similar') and similar is False:
+            continue
+
+        protein = filename.replace('.csv', '')
+        triads_df = pd.read_csv(os.path.join(directory, filename), header=0)
+
+        protein_df[protein] = triads_df
+
+    return protein_df
+
+
+def read_triads_df(directory, similar=True):
+    triads_df_list = []
+    header = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
+
+    for filename in os.listdir(directory):
+        if filename.startswith('similar') and similar is False:
+            continue
+
+        df = pd.read_csv(os.path.join(directory, filename), header=None)
+        df.columns = header
+        triads_df_list.append(df)
+
+    return pd.concat(triads_df_list, axis=0, ignore_index=True)
