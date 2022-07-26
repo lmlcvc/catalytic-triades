@@ -3,7 +3,7 @@ import itertools
 import pandas as pd
 from niapy.algorithms.basic import GeneticAlgorithm
 from niapy.algorithms.basic.ga import multi_point_crossover, uniform_mutation, two_point_crossover
-from niapy.task import Task
+from niapy.task import Task, OptimizationType
 
 import clean_files as cf
 import find_triades as ft
@@ -44,9 +44,10 @@ if __name__ == "__main__":
 
     # TODO: change to single-point crossover
     for i in range(5):
-        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count), max_evals=10000)
+        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count), max_evals=10000,
+                    optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
         algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=two_point_crossover,
-                                                  mutation=uniform_mutation,
+                                                  mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init,
                                                   individual_type=problem.TriadIndividual)
