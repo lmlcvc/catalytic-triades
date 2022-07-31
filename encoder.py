@@ -2,6 +2,8 @@ import configparser
 import math
 import os
 
+import pandas as pd
+
 import util
 
 config = configparser.ConfigParser()
@@ -9,6 +11,7 @@ config.read(os.path.join(os.pardir, 'config.ini'))
 config = config['default']
 
 encoded_directory = config['encoded_location']
+encoded_minmax_directory = config['encoded_minmax_location']
 
 
 def encode_atoms(triangles, method="old"):
@@ -66,7 +69,106 @@ def encode_atoms(triangles, method="old"):
 
 
 def old_encode(triads, all_distances=False, angles=False, distance_categories=20, angle_categories=20):
+    """
+    Encode triads to csv files of integer rows, taking min and max accepted values as categor reference points.
+
+    :param triads: Dict of triads by protein
+    :param all_distances: Boolean - Whether all 3 distances should be included in encoding
+    :param angles: Whether angles should be included in encoding
+    :param distance_categories: Number of distance categories in min-max range
+    :param angle_categories: Number of angle categories in min-max range
+    :return:
+    """
+
+    # make df of all triads
+    triads_all_df = pd.concat(triads.values(), ignore_index=True)
+
+    # get min & max value for all
+    ranges = util.get_triad_ranges_old(triads_all_df)
+
+    # TODO: prepisati ovo dolje da pišu te min i max vrijednosti
+
     util.create_folder(encoded_directory)
+
+    for protein in triads.keys():
+        population = []
+
+        for index, triad in triads[protein].iterrows():
+            genes = []
+
+            # Nuc atom gene
+            if triad["Nuc_name"] == "OG":
+                genes.append(0)
+            elif triad["Nuc_name"] == "SG":
+                genes.append(1)
+
+            # Acid atom gene
+            if triad["Acid_name"] == "OD1":
+                genes.append(0)
+            elif triad["Acid_name"] == "OD2":
+                genes.append(1)
+
+            # Base atom gene
+            if triad["Base_aa"] == "HIS":
+                genes.append(0)
+            elif triad["Base_aa"] == "ASP":
+                genes.append(1)
+            elif triad["Base_aa"] == "GLU":
+                genes.append(2)
+
+            # - - - - - - - - - -
+
+            # Nuc-Acid distance
+            nuc_acid_range = ranges["Dist_Nuc_Acid_max"] - ranges["Dist_Nuc_Acid_min"]
+            genes.append(
+                math.floor((1 - (ranges["Dist_Nuc_Acid_max"] - triad["Dist_Nuc_Acid"])
+                            / nuc_acid_range) * distance_categories))
+
+            # Acid-Base distance
+            acid_base_range = ranges["Dist_Acid_Base_max"] - ranges["Dist_Acid_Base_min"]
+            genes.append(math.floor((1 - (ranges["Dist_Acid_Base_max"] - triad["Dist_Acid_Base"])
+                                     / acid_base_range) * distance_categories))
+
+            # Base-Nuc distance (optional)
+            if all_distances:
+                base_nuc_range = ranges["Dist_Base_Nuc_max"] - ranges["Dist_Base_Nuc_min"]
+                genes.append(math.floor((1 - (ranges["Dist_Base_Nuc_max"] - triad["Dist_Base_Nuc"]) /
+                                         base_nuc_range) * distance_categories))
+
+            # - - - - - - - - - -
+
+            if angles:
+                # Nuc angle
+                nuc_angle_range = ranges["Angle_Nuc_max"] - ranges["Angle_Nuc_min"]
+                genes.append((1 - (ranges["Angle_Nuc_max"] - triad["Angle_Nuc"]) /
+                              nuc_angle_range) * angle_categories)
+
+                # Acid angle
+                acid_angle_range = ranges["Angle_Acid_max"] - ranges["Angle_Acid_min"]
+                genes.append((1 - (ranges["Angle_Acid_max"] - triad["Angle_Acid"]) /
+                              acid_angle_range) * angle_categories)
+
+            genes.append('\n')
+            genes = [str(i) for i in genes]
+            individual = "".join([",".join(genes[:-1]), genes[-1]])
+            population.append(individual)
+
+            util.write_file(encoded_directory, '', protein, ''.join(population))
+
+
+def old_encode_minmax(triads, all_distances=False, angles=False, distance_categories=20, angle_categories=20):
+    """
+    Encode triads to csv files of integer rows, taking min and max accepted values as categor reference points.
+
+    :param triads: Dict of triads by protein
+    :param all_distances: Boolean - Whether all 3 distances should be included in encoding
+    :param angles: Whether angles should be included in encoding
+    :param distance_categories: Number of distance categories in min-max range
+    :param angle_categories: Number of angle categories in min-max range
+    :return:
+    """
+
+    util.create_folder(encoded_minmax_directory)
 
     for protein in triads.keys():
         population = []
@@ -120,7 +222,7 @@ def old_encode(triads, all_distances=False, angles=False, distance_categories=20
             individual = "".join([",".join(genes[:-1]), genes[-1]])
             population.append(individual)
 
-            util.write_file(encoded_directory, '', protein, ''.join(population))
+            util.write_file(encoded_minmax_directory, '', protein, ''.join(population))
             # TODO: custom headers depending on parameters
 
 

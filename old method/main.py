@@ -36,13 +36,12 @@ if __name__ == "__main__":
 
     # found triads encoding to files
     if not os.path.isdir(encoded_directory) or not os.listdir(encoded_directory):
-        encoder.old_encode(triads=triads_protein)  # TODO: remove if unnecessary
+        encoder.old_encode(triads=triads_protein)
 
     # load all encoded triads to dataframe and calculate occurrence counts
     triads_df = util.read_triads_df(encoded_directory)
     triads_count = triads_df.groupby(list(triads_df.columns)).size().reset_index(name='Count')
 
-    # TODO: change to single-point crossover
     for i in range(5):
         task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count), max_evals=10000,
                     optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)

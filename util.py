@@ -126,3 +126,19 @@ def read_triads_df(directory, similar=True):
         triads_df_list.append(df)
 
     return pd.concat(triads_df_list, axis=0, ignore_index=True)
+
+
+def get_triad_ranges_old(triads_all_df):
+    """
+    :param triads_all_df: Dataframe of all triads in all proteins
+    :return: Dict of min and max values for old method range implementation
+    """
+
+    return {"Dist_Nuc_Acid_min": triads_all_df["Dist_Nuc_Acid"].min(),
+            "Dist_Nuc_Acid_max": triads_all_df["Dist_Nuc_Acid"].max(),
+            "Dist_Acid_Base_min": triads_all_df["Dist_Acid_Base"].min(),
+            "Dist_Acid_Base_max": triads_all_df["Dist_Acid_Base"].max(),
+            "Dist_Base_Nuc_min": triads_all_df["Dist_Base_Nuc"].min(),
+            "Dist_Base_Nuc_max": triads_all_df["Dist_Base_Nuc"].max(),
+            "Angle_Nuc_min": triads_all_df["Angle_Nuc"].min(), "Angle_Nuc_max": triads_all_df["Angle_Nuc"].max(),
+            "Angle_Acid_min": triads_all_df["Angle_Acid"].min(), "Angle_Acid_max": triads_all_df["Angle_Acid"].max()}
