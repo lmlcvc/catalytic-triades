@@ -12,6 +12,7 @@ from numpy import shape
 HEADER = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
 
 
+# TODO: population init <= 20% pronađene i ostatak random
 def population_init(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
                     angle_categories=20, **kwargs):
     # generate all possible permutations
@@ -29,13 +30,7 @@ def population_init(task, population_size, rng, all_distances=False, angles=Fals
     permutations = [list(a) for a in itertools.product(*options)]
     permutations_df = pd.DataFrame(permutations, columns=HEADER)
 
-    print(permutations_df)
-
-    # pick random n=population_size elements
-    print(permutations_df.values)
-    print(shape(permutations_df.values))
-
-    pop = permutations_df.sample(n=population_size).to_numpy()
+    pop = permutations_df.sample(n=population_size).to_numpy()  # pick random n=population_size elements
 
     fpop = np.apply_along_axis(task.eval, 1, pop)
 
@@ -81,5 +76,4 @@ class MostCommonPattern(Problem):
         if merged_df.empty:
             return 0
         else:
-            print('Merged, Count = ' + str(merged_df['Count'].item()))
             return merged_df['Count'].item()

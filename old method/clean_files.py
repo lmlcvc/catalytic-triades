@@ -44,7 +44,7 @@ def clean_files():
                                 or "SGCYS" in atom_classificaiton:
                             nuc_list.append(atom)
 
-                        # add ACIDs (CG HIS / CG ASP / CG GLU) to ACID list
+                        # add ACIDs (OD1, OD2) to ACID list
                         if ("OD1" in atom_classificaiton
                             or "OD2" in atom_classificaiton) \
                                 and "ASN" not in atom_classificaiton:
