@@ -12,7 +12,7 @@ ACID – NUC: ND1, ND2
 
 NUC_CLASSIFICATION = ["OG", "SG"]
 ACID_CLASSIFICATION = ["OD1", "OD2", "O", "OE1", "OE2"]
-BASE_CLASSIFICATION = ["ND1", "ND2"]
+BASE_CLASSIFICATION = ["ND1", "NE2"]
 
 
 def clean_files():
@@ -60,7 +60,7 @@ def clean_files():
                         if atom_classification in ACID_CLASSIFICATION:
                             acid_list.append(atom)
 
-                        # add BASEs (ND1, ND2) to BASE list
+                        # add BASEs (ND1, NE2) to BASE list
                         if atom_classification in BASE_CLASSIFICATION:
                             base_list.append(atom)
 
