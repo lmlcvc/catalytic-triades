@@ -132,10 +132,9 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                 1. New population.
                 2. New populations function/fitness values.
                 3. New global best solution
-                4. New global best solutions fitness/objective value
+                4. New global best solution's fitness/objective value
                 5. Additional arguments.
         """
-        print('---------- ITERATION ----------')
 
         new_pop = np.empty(self.population_size, dtype=object)
         for i in range(self.population_size):

@@ -47,7 +47,7 @@ if __name__ == "__main__":
                     optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
         algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
-                                                  crossover_rate=0.1, mutation_rate=0.01,
+                                                  crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init,
                                                   individual_type=problem.TriadIndividual)
         best = algo.run(task=task)
