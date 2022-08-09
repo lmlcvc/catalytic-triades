@@ -42,6 +42,8 @@ if __name__ == "__main__":
     triads_df = util.read_triads_df(encoded_directory)
     triads_count = triads_df.groupby(list(triads_df.columns)).size().reset_index(name='Count')
 
+    triads_dict = util.read_triads_dict(encoded_directory)
+
     for i in range(5):
         task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count), max_evals=10000,
                     optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
