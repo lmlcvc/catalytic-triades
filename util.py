@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+from collections import defaultdict
 
 import pandas as pd
 from Bio.PDB.PDBParser import PDBParser
@@ -126,6 +127,25 @@ def read_triads_df(directory, similar=True):
         triads_df_list.append(df)
 
     return pd.concat(triads_df_list, axis=0, ignore_index=True)
+
+
+def read_triads_dict(directory, similar=True):
+    triads_df_dict = {}
+    triads_df_dict = defaultdict(lambda: pd.DataFrame(), triads_df_dict)
+
+    header = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
+
+    for filename in os.listdir(directory):
+        if filename.startswith('similar') and similar is False:
+            continue
+
+        protein = filename.replace("similar_", "")
+
+        df = pd.read_csv(os.path.join(directory, filename), header=None)
+        df.columns = header
+        triads_df_dict[protein] = pd.concat([triads_df_dict[protein], df], axis=0, ignore_index=True)
+
+    return triads_df_dict
 
 
 def get_triad_ranges_old(triads_all_df):

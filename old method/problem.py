@@ -77,3 +77,33 @@ class MostCommonPattern(Problem):
             return 0
         else:
             return merged_df['Count'].item()
+
+
+class EnzymeCommonPattern(Problem):
+
+    def __init__(self, lower=0, upper=1000, dimension=5, triads_count=None, *args, **kwargs):
+        r"""Initialize EnzymeCommonPattern problem.
+        Args:
+            dimension (Optional[int]): Dimension of the problem.
+            lower (Optional[Union[float, Iterable[float]]]): Lower bounds of the problem.
+            upper (Optional[Union[float, Iterable[float]]]): Upper bounds of the problem.
+        See Also:
+            :func:`niapy.problems.Problem.__init__`
+        """
+
+        super().__init__(dimension, lower, upper, *args, **kwargs)
+        self.triads_count = triads_count.astype(int)
+
+    def _evaluate(self, x):
+
+        x_df = pd.DataFrame(data=x).T.astype(int)
+        x_df.columns = HEADER
+
+        # TODO: count number of diff enzymes in protein triad dict that contain this triad
+
+        merged_df = self.triads_count.merge(x_df, on=x_df.columns.tolist(), how='inner')
+
+        if merged_df.empty:
+            return 0
+        else:
+            return merged_df['Count'].item()
