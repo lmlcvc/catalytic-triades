@@ -42,10 +42,29 @@ if __name__ == "__main__":
     triads_df = util.read_triads_df(encoded_directory)
     triads_count = triads_df.groupby(list(triads_df.columns)).size().reset_index(name='Count')
 
+    print("COUNT")
+    print(triads_count)
+
     triads_dict = util.read_triads_dict(encoded_directory)
+    triads_dict_count = {}
+    for protein in triads_dict.keys():
+        triads_dict_count[protein] = triads_dict[protein].groupby(
+            list(triads_dict[protein].columns)).size().reset_index(
+            name='Count')
+
+    """for i in range(5):
+        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count), max_evals=10000,
+                    optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+        algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=algorithm.single_point_crossover,
+                                                  mutation=algorithm.old_mutation,
+                                                  crossover_rate=0.9, mutation_rate=0.01,
+                                                  initialization_function=problem.population_init,
+                                                  individual_type=problem.TriadIndividual)
+        best = algo.run(task=task)
+        print('%s -> %s' % (best[0], best[1]))"""
 
     for i in range(5):
-        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count), max_evals=10000,
+        task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count), max_evals=10000,
                     optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
         algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
