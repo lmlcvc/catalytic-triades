@@ -92,18 +92,20 @@ class EnzymeCommonPattern(Problem):
         """
 
         super().__init__(dimension, lower, upper, *args, **kwargs)
-        self.triads_count = triads_count.astype(int)
+        self.triads_count = triads_count
 
     def _evaluate(self, x):
 
         x_df = pd.DataFrame(data=x).T.astype(int)
         x_df.columns = HEADER
 
-        # TODO: count number of diff enzymes in protein triad dict that contain this triad
+        merged_df = pd.DataFrame()
 
-        merged_df = self.triads_count.merge(x_df, on=x_df.columns.tolist(), how='inner')
+        for protein in self.triads_count.keys():
+            merged_df = pd.concat(
+                [self.triads_count[protein].merge(x_df, on=x_df.columns.tolist(), how='inner'), merged_df])
 
         if merged_df.empty:
             return 0
         else:
-            return merged_df['Count'].item()
+            return merged_df.shape[0]
