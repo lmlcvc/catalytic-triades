@@ -64,8 +64,6 @@ def clean_files():
                         if atom_classification in BASE_CLASSIFICATION:
                             base_list.append(atom)
 
-                    print(nuc_list)
-
                     # write atom lists to NUC/ACID/BASE files
                     nuc.write(''.join(nuc_list))
                     acid.write(''.join(acid_list))

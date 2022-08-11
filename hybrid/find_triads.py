@@ -84,7 +84,6 @@ def find_candidates(nuc_atoms, acid_atoms, base_atoms):
         # N2 must not be the same atom as N1
         for combination in acid_nd1:
             for base in bases:
-                print(base[0].get_name())
                 if base[0].get_name() == "NE2" \
                         and combination["ND1"][0] - base[0] < ND1_NE2_MAX:
                     tmp_dict = {"acid": combination["acid"], "ND1": combination["ND1"], "NE2": base}
