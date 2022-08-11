@@ -16,7 +16,7 @@ output_directory = config['output_location']
 ACID_BASEN1_MAX = 4
 BASEN1_BASEN2_MAX = 2.5
 BASEN2_NUC_MAX = 4.5
-NUC_ACID_MAX = 8.5
+NUC_ACID_MAX = 9
 
 ANGLE_ACID_MAX = 50
 ANGLE_N1_MAX = 180
