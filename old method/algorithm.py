@@ -80,7 +80,7 @@ def old_mutation(pop, ic, mr, task, rng, distance_categories=20, angle_categorie
 
 class GeneticAlgorithmModified(GeneticAlgorithm):
 
-    def __init__(self, population_size=25, tournament_size=2, mutation_rate=0.25, crossover_rate=0.25,
+    def __init__(self, population_size=100, tournament_size=2, mutation_rate=0.25, crossover_rate=0.25,
                  selection=tournament_selection, crossover=uniform_crossover, mutation=uniform_mutation, *args,
                  **kwargs):
         """Initialize GeneticAlgorithm.
