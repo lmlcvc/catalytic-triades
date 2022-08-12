@@ -1,4 +1,7 @@
+import configparser
 import itertools
+import math
+import os
 
 import numpy as np
 import pandas as pd
@@ -9,12 +12,56 @@ __all__ = ['MostCommonPattern']
 
 from numpy import shape
 
+import util
+
 HEADER = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
 
+config = configparser.ConfigParser()
+config.read(os.path.join(os.pardir, 'config.ini'))
+config = config['default']
+encoded_directory = config['encoded_location']  # TODO: adapt to other methods if necessary
 
-# TODO: population init <= 20% pronađene i ostatak random
-def population_init(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
-                    angle_categories=20, **kwargs):
+
+# TODO: split code into multiple methods
+def population_init_mixed(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
+                          angle_categories=20, **kwargs):
+    triads_df = util.read_triads_df(encoded_directory)
+    n_triads = triads_df.shape[0]
+
+    if n_triads > 0.2 * population_size:
+        n_triads = math.floor(0.2 * population_size)
+
+    n_permutations = population_size - n_triads
+
+    # generate all possible permutations
+    options = [[0, 1], [0, 1], [0, 1], list(range(0, distance_categories)),
+               list(range(0, distance_categories))]  # atom types and 2 distances
+
+    if all_distances:  # append list for third distance
+        options.append(range(0, distance_categories))
+
+    if angles:  # append lists for angles
+        options.append(range(0, angle_categories))
+        options.append(range(0, angle_categories))
+        options.append(range(0, angle_categories))
+
+    permutations = [list(a) for a in itertools.product(*options)]
+    permutations_df = pd.DataFrame(permutations, columns=HEADER)
+
+    pop = [triads_df.sample(n=n_triads).to_numpy(), permutations_df.sample(n=n_permutations).to_numpy()]
+    pop = np.concatenate(pop, axis=0)
+
+    fpop = np.apply_along_axis(task.eval, 1, pop)
+
+    pop = list(zip(pop, fpop))
+    pop = [TriadIndividual(i[0], i[1]) for i in pop]
+
+    fpop = np.asarray([x.f for x in pop])
+    return pop, fpop
+
+
+def population_init_random(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
+                           angle_categories=20, **kwargs):
     # generate all possible permutations
     options = [[0, 1], [0, 1], [0, 1], list(range(0, distance_categories)),
                list(range(0, distance_categories))]  # atom types and 2 distances
@@ -53,7 +100,7 @@ class TriadIndividual(Individual):
 
 class MostCommonPattern(Problem):
 
-    def __init__(self, lower=0, upper=1000, dimension=5, triads_count=None, *args, **kwargs):
+    def __init__(self, lower=0, upper=1000, dimension=5, triads_count=None, method='old', *args, **kwargs):
         r"""Initialize MostCommonPattern problem.
         Args:
             dimension (Optional[int]): Dimension of the problem.
@@ -65,6 +112,7 @@ class MostCommonPattern(Problem):
 
         super().__init__(dimension, lower, upper, *args, **kwargs)
         self.triads_count = triads_count.astype(int)
+        self.method = method
 
     def _evaluate(self, x):
 
@@ -81,7 +129,8 @@ class MostCommonPattern(Problem):
 
 class EnzymeCommonPattern(Problem):
 
-    def __init__(self, lower=0, upper=1000, dimension=5, triads_count=None, *args, **kwargs):
+    def __init__(self, lower=0, upper=1000, dimension=5, triads_count=None, triads_count_dict=None, method='old', *args,
+                 **kwargs):
         r"""Initialize EnzymeCommonPattern problem.
         Args:
             dimension (Optional[int]): Dimension of the problem.
@@ -93,6 +142,8 @@ class EnzymeCommonPattern(Problem):
 
         super().__init__(dimension, lower, upper, *args, **kwargs)
         self.triads_count = triads_count
+        self.triads_count_dict = triads_count_dict
+        self.method = method
 
     def _evaluate(self, x):
 
