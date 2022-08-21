@@ -94,8 +94,11 @@ class TriadIndividual(Individual):
 
     def __init__(self, x, f, **kwargs):
         super().__init__(x, **kwargs)
-        self.__name__ = x
+        self.x = x
         self.f = f
+
+    def fitness(self):
+        return self.f
 
 
 class MostCommonPattern(Problem):
