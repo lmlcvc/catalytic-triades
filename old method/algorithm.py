@@ -1,6 +1,5 @@
 import operator
 import random
-from pprint import pprint
 
 import numpy as np
 from niapy.algorithms import Individual, default_individual_init
@@ -12,12 +11,12 @@ from problem import TriadIndividual
 def single_point_crossover(pop, ic, _cr, rng, task, new_pop, algorithm):
     r"""Single point crossover method.
     Args:
-        pop (numpy.ndarray[Individual]): Current population.
+        pop (list): Current population.
         ic (int): Index of current individual.
         _cr (float): Crossover probability.
         rng (numpy.random.Generator): Random generator.
         task
-        new_pop
+        new_pop (list): Population newly created through crossover
         algorithm
     Returns:
         numpy.ndarray: New genotype or old individual if no crossover.
@@ -33,13 +32,10 @@ def single_point_crossover(pop, ic, _cr, rng, task, new_pop, algorithm):
 
         crossover_index = random.randint(0, len(pop[ic].x) - 2)  # -2 to ensure at least one gene is changed
 
+        # crossover
         tmp = pop[ic].copy()
         x[0:crossover_index] = y[0:crossover_index]
-        # pop[io].x[0:crossover_index] = tmp[0:crossover_index]
         y[0: crossover_index] = tmp[0:crossover_index]
-
-        print(len(pop))
-        print(len(new_pop))
 
         # mutation
         x.x = algorithm.mutation(pop, x, algorithm.mutation_rate, task, rng)
@@ -49,15 +45,12 @@ def single_point_crossover(pop, ic, _cr, rng, task, new_pop, algorithm):
         x.evaluate(task, rng)
         y.evaluate(task, rng)
 
+        # append offspring to new population list
         new_pop.append(x)
         new_pop.append(y)
 
-        # TODO: ne mora vratiti ništa
-        return np.asarray(x)
     else:
-        print("no crossover, " + str(len(pop)) + ", " + str(len(new_pop)))
-        print("---------")
-        return pop[ic]
+        pass
 
 
 def old_mutation(pop, individual, mr, task, rng, distance_categories=20, angle_categories=20):
@@ -167,14 +160,18 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         for i in range(self.population_size):
             ind_tmp = self.selection(population, i, self.tournament_size, best_x, self.rng)
             ind = self.individual_type(ind_tmp.x, ind_tmp.f)
-            ind.x = self.crossover(population, i, self.crossover_rate, self.rng, task=task, new_pop=new_pop,
-                                   algorithm=self)
+            # ind.x = self.crossover(population, i, self.crossover_rate, self.rng, task=task, new_pop=new_pop,
+            #                       algorithm=self)
 
-            if ind.f < best_fitness:
-                best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
+            self.crossover(population, i, self.crossover_rate, self.rng, task=task,
+                           new_pop=new_pop, algorithm=self)
+
+            # if ind.f < best_fitness:
+            #     best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
         double_list = [population, new_pop]
         population = [item for sublist in double_list for item in sublist]
+        best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
         population_reduced = sorted(population, key=operator.attrgetter('f'), reverse=True)[-self.population_size:]
 
