@@ -139,7 +139,7 @@ def read_triads_dict(directory, similar=True):
         if filename.startswith('similar') and similar is False:
             continue
 
-        protein = filename.replace("similar_", "")
+        protein = filename.replace("similar_", "").replace(".csv", "")
 
         df = pd.read_csv(os.path.join(directory, filename), header=None)
         df.columns = header
