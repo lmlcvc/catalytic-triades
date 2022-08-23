@@ -1,6 +1,7 @@
 import pandas as pd
 from niapy.task import Task, OptimizationType
 
+import analysis
 import clean_files as cf
 import find_triades as ft
 import encoder
@@ -10,6 +11,8 @@ import configparser
 import util
 import problem
 import algorithm
+
+import util
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.pardir, 'config.ini'))
@@ -22,11 +25,21 @@ encoded_directory = config['encoded_location']
 ga_output = config['ga_output_location']
 ga_most_common = config['ga_most_common']
 ga_enzyme_common = config['ga_enzyme_common']
+output = config['output_location']
+
+output_analysis = config['analysis_output_location']
 
 if __name__ == "__main__":
     # check if files have been transformed
     if not os.path.isdir(transpath) or not os.listdir(transpath):
         cf.clean_files()
+
+    # find triades and make csv files
+    ft.find_triades()
+
+    # results analysis
+    util.create_folder(output_analysis)
+    analysis.store_triad_count(output, output_analysis, similar=True)
 
     # find triads and make csv files
     if not os.path.isdir(output) or not os.listdir(output):
@@ -92,7 +105,7 @@ if __name__ == "__main__":
                                                   initialization_function=problem.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
         best = algo.run(task=task)
-    
+
         best_list = list(best)
         best_list[0] = ''.join(str(v) for v in best_list[0].tolist())
         best_df = pd.DataFrame(best_list).T
