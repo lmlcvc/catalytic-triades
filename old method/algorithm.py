@@ -155,7 +155,6 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                 5. Additional arguments.
         """
 
-        print("NEW ITERATION, POP SIZE = " + str(len(population)))
         new_pop = []
         for i in range(self.population_size):
             ind_tmp = self.selection(population, i, self.tournament_size, best_x, self.rng)

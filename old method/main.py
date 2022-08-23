@@ -1,8 +1,4 @@
-import itertools
-
 import pandas as pd
-from niapy.algorithms.basic import GeneticAlgorithm
-from niapy.algorithms.basic.ga import multi_point_crossover, uniform_mutation, two_point_crossover
 from niapy.task import Task, OptimizationType
 
 import clean_files as cf
@@ -23,12 +19,16 @@ transpath = config['transformed_location']
 output = config['output_location']
 encoded_directory = config['encoded_location']
 
+ga_output = config['ga_output_location']
+ga_most_common = config['ga_most_common']
+ga_enzyme_common = config['ga_enzyme_common']
+
 if __name__ == "__main__":
     # check if files have been transformed
     if not os.path.isdir(transpath) or not os.listdir(transpath):
         cf.clean_files()
 
-    # find triades and make csv files
+    # find triads and make csv files
     if not os.path.isdir(output) or not os.listdir(output):
         ft.find_triads()
 
@@ -46,10 +46,17 @@ if __name__ == "__main__":
     triads_dict_count = {}
     for protein in triads_dict.keys():
         triads_dict_count[protein] = triads_dict[protein].groupby(
-            list(triads_dict[protein].columns)).size().reset_index(
-            name='Count')
+            list(triads_dict[protein].columns)).size().reset_index(name='Count')
 
-    for i in range(5):
+    # - - - - - - - - - -
+
+    # run genethic algorithm
+    util.create_folder(ga_output)
+    """
+    file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
+    most_common_df = pd.DataFrame()
+    print(os.path.join(ga_output, ga_most_common))
+    for i in range(2):
         task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
                     max_evals=10000,
                     optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
@@ -61,13 +68,29 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         best = algo.run(task=task)
-        print('%s -> %s' % (best[0], best[1]))
 
+        # TODO: sa headerom
+        best_list = list(best)
+        best_list[0] = ''.join(str(v) for v in best_list[0].tolist())
+        best_df = pd.DataFrame(best_list).T
+        print(best_df)
+        most_common_df = pd.concat([most_common_df, best_df])
+
+        print(most_common_df)
+        # file_most_common.write(f"{','.join(best[0].tolist())}, ${str(best[1])}\n")  # TODO use methods from util to write to file
+        print('%s -> %s' % (best[0], best[1]))
+    most_common_df.to_csv(file_most_common, header=False, index=False)
+    file_most_common.close()
+    """
+
+    file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
+    enzyme_common_df = pd.DataFrame()
     for i in range(5):
         task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_count,
                                                         triads_count_dict=triads_dict_count, method='old'),
                     max_evals=10000,
-                    optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                    optimization_type=OptimizationType.MAXIMIZATION,
+                    enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
@@ -76,4 +99,12 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         best = algo.run(task=task)
-        print('%s -> %s' % (best[0], best[1]))
+
+        best_list = list(best)
+        best_list[0] = ''.join(str(v) for v in best_list[0].tolist())
+        best_df = pd.DataFrame(best_list).T
+        print(best_df)
+        enzyme_common_df = pd.concat([enzyme_common_df, best_df])
+
+        print(enzyme_common_df)
+    file_enzyme_common.close()
