@@ -1,13 +1,19 @@
+import analysis
 import clean_files as cf
 import find_triades as ft
 import os
 import configparser
+
+import util
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.pardir, 'config.ini'))
 config = config['default']
 
 transpath = config['transformed_location']
+output = config['output_location']
+
+output_analysis = config['analysis_output_location']
 
 if __name__ == "__main__":
     # check if files have been transformed
@@ -16,3 +22,7 @@ if __name__ == "__main__":
 
     # find triades and make csv files
     ft.find_triades()
+
+    # results analysis
+    util.create_folder(output_analysis)
+    analysis.store_triad_count(output, output_analysis, similar=True)
