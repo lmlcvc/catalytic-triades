@@ -1,6 +1,9 @@
 import logging
 import math
 import os
+from collections import defaultdict
+
+import pandas as pd
 from Bio.PDB.PDBParser import PDBParser
 
 parser = PDBParser(PERMISSIVE=1, QUIET=True)
@@ -94,3 +97,68 @@ def store_atoms(directory):
                 base_atoms[protein] = atoms_tmp
 
     return nuc_atoms, acid_atoms, base_atoms
+
+
+def store_triads_protein(directory, similar=True):
+    protein_df = {}
+
+    for filename in os.listdir(directory):
+        if filename.startswith('similar') and similar is False:
+            continue
+
+        protein = filename.replace('.csv', '')
+        triads_df = pd.read_csv(os.path.join(directory, filename), header=0)
+
+        protein_df[protein] = triads_df
+
+    return protein_df
+
+
+def read_triads_df(directory, similar=True):
+    triads_df_list = []
+    header = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
+
+    for filename in os.listdir(directory):
+        if filename.startswith('similar') and similar is False:
+            continue
+
+        df = pd.read_csv(os.path.join(directory, filename), header=None)
+        df.columns = header
+        triads_df_list.append(df)
+
+    return pd.concat(triads_df_list, axis=0, ignore_index=True)
+
+
+def read_triads_dict(directory, similar=True):
+    triads_df_dict = {}
+    triads_df_dict = defaultdict(lambda: pd.DataFrame(), triads_df_dict)
+
+    header = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
+
+    for filename in os.listdir(directory):
+        if filename.startswith('similar') and similar is False:
+            continue
+
+        protein = filename.replace("similar_", "").replace(".csv", "")
+
+        df = pd.read_csv(os.path.join(directory, filename), header=None)
+        df.columns = header
+        triads_df_dict[protein] = pd.concat([triads_df_dict[protein], df], axis=0, ignore_index=True)
+
+    return triads_df_dict
+
+
+def get_triad_ranges_old(triads_all_df):
+    """
+    :param triads_all_df: Dataframe of all triads in all proteins
+    :return: Dict of min and max values for old method range implementation
+    """
+
+    return {"Dist_Nuc_Acid_min": triads_all_df["Dist_Nuc_Acid"].min(),
+            "Dist_Nuc_Acid_max": triads_all_df["Dist_Nuc_Acid"].max(),
+            "Dist_Acid_Base_min": triads_all_df["Dist_Acid_Base"].min(),
+            "Dist_Acid_Base_max": triads_all_df["Dist_Acid_Base"].max(),
+            "Dist_Base_Nuc_min": triads_all_df["Dist_Base_Nuc"].min(),
+            "Dist_Base_Nuc_max": triads_all_df["Dist_Base_Nuc"].max(),
+            "Angle_Nuc_min": triads_all_df["Angle_Nuc"].min(), "Angle_Nuc_max": triads_all_df["Angle_Nuc"].max(),
+            "Angle_Acid_min": triads_all_df["Angle_Acid"].min(), "Angle_Acid_max": triads_all_df["Angle_Acid"].max()}

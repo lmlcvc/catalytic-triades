@@ -1,6 +1,14 @@
 import os
 import configparser
 
+config = configparser.ConfigParser()
+config.read(os.path.join(os.pardir, 'config.ini'))
+config = config['default']
+
+dirpath = config['location']
+destpath = config['transformed_location']
+keypath = config['location'] + config['keywords']
+
 
 def clean_files():
     """
@@ -9,13 +17,6 @@ def clean_files():
 
     :return: None
     """
-
-    config = configparser.ConfigParser()
-    config.read(os.path.join(os.pardir, 'config.ini'))
-    config = config['default']
-
-    dirpath = config['location']
-    destpath = config['transformed_location']
 
     if not os.path.isdir(destpath):
         os.makedirs(destpath)
@@ -43,7 +44,7 @@ def clean_files():
                                 or "SGCYS" in atom_classificaiton:
                             nuc_list.append(atom)
 
-                        # add ACIDs (CG HIS / CG ASP / CG GLU) to ACID list
+                        # add ACIDs (OD1, OD2) to ACID list
                         if ("OD1" in atom_classificaiton
                             or "OD2" in atom_classificaiton) \
                                 and "ASN" not in atom_classificaiton:
