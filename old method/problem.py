@@ -156,11 +156,6 @@ class EnzymeCommonPattern(Problem):
         merged_df = pd.DataFrame()
 
         for protein in self.triads_count_dict.keys():
-            protein = protein.replace(".csv", "")
-            print(type(self.triads_count[protein]))
-            print(self.triads_count[protein])
-            print(type(self.triads_count_dict[protein]))
-            print(self.triads_count_dict[protein])
             merged_df = pd.concat(
                 [self.triads_count_dict[protein].merge(x_df, on=x_df.columns.tolist(), how='inner'), merged_df])
 
