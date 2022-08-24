@@ -52,10 +52,8 @@ if __name__ == "__main__":
 
     # run genethic algorithm
     util.create_folder(ga_output)
-    """
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
     most_common_df = pd.DataFrame()
-    print(os.path.join(ga_output, ga_most_common))
     for i in range(2):
         task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
                     max_evals=10000,
@@ -73,38 +71,32 @@ if __name__ == "__main__":
         best_list = list(best)
         best_list[0] = ''.join(str(v) for v in best_list[0].tolist())
         best_df = pd.DataFrame(best_list).T
-        print(best_df)
-        most_common_df = pd.concat([most_common_df, best_df])
 
-        print(most_common_df)
-        # file_most_common.write(f"{','.join(best[0].tolist())}, ${str(best[1])}\n")  # TODO use methods from util to write to file
-        print('%s -> %s' % (best[0], best[1]))
-    most_common_df.to_csv(file_most_common, header=False, index=False)
+        most_common_df = pd.concat([most_common_df, best_df])
+        most_common_df.to_csv(file_most_common, header=False, index=False)
     file_most_common.close()
-    """
+
+    #####
 
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
-    for i in range(5):
-        task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_count,
-                                                        triads_count_dict=triads_dict_count, method='old'),
-                    max_evals=10000,
-                    optimization_type=OptimizationType.MAXIMIZATION,
-                    enable_logging=True)
 
+    for i in range(5):
+        task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
+                                                        triads_count_dict=triads_dict_count, method='old'),
+                    max_evals=1000,
+                    optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
         algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
-
         best = algo.run(task=task)
-
+    
         best_list = list(best)
         best_list[0] = ''.join(str(v) for v in best_list[0].tolist())
         best_df = pd.DataFrame(best_list).T
-        print(best_df)
-        enzyme_common_df = pd.concat([enzyme_common_df, best_df])
 
-        print(enzyme_common_df)
+        enzyme_common_df = pd.concat([enzyme_common_df, best_df])
+        enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
     file_enzyme_common.close()
