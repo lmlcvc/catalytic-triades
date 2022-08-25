@@ -12,8 +12,6 @@ import util
 import problem
 import algorithm
 
-import util
-
 config = configparser.ConfigParser()
 config.read(os.path.join(os.pardir, 'config.ini'))
 config = config['default']
@@ -25,21 +23,14 @@ encoded_directory = config['encoded_location']
 ga_output = config['ga_output_location']
 ga_most_common = config['ga_most_common']
 ga_enzyme_common = config['ga_enzyme_common']
-output = config['output_location']
 
 output_analysis = config['analysis_output_location']
+final_population = config['final_population']
 
 if __name__ == "__main__":
     # check if files have been transformed
     if not os.path.isdir(transpath) or not os.listdir(transpath):
         cf.clean_files()
-
-    # find triades and make csv files
-    ft.find_triades()
-
-    # results analysis
-    util.create_folder(output_analysis)
-    analysis.store_triad_count(output, output_analysis, similar=True)
 
     # find triads and make csv files
     if not os.path.isdir(output) or not os.listdir(output):
@@ -66,13 +57,15 @@ if __name__ == "__main__":
     # run genethic algorithm
     util.create_folder(ga_output)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
-    most_common_df = pd.DataFrame()
-    for i in range(2):
-        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                    max_evals=10000,
-                    optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+    util.create_folder(final_population)
 
-        algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=algorithm.single_point_crossover,
+    most_common_df = pd.DataFrame()
+    for i in range(10):
+        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
+                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+
+        algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=i, population_size=100,
+                                                  crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init_mixed,
@@ -88,18 +81,19 @@ if __name__ == "__main__":
         most_common_df = pd.concat([most_common_df, best_df])
         most_common_df.to_csv(file_most_common, header=False, index=False)
     file_most_common.close()
+    print("MOST COMMON EVALUATED")
 
     #####
 
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
-    for i in range(5):
+    for i in range(10):
         task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                         triads_count_dict=triads_dict_count, method='old'),
-                    max_evals=1000,
-                    optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
-        algo = algorithm.GeneticAlgorithmModified(population_size=100, crossover=algorithm.single_point_crossover,
+                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+        algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=i, population_size=100,
+                                                  crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init_mixed,
@@ -113,3 +107,7 @@ if __name__ == "__main__":
         enzyme_common_df = pd.concat([enzyme_common_df, best_df])
         enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
     file_enzyme_common.close()
+
+    # results analysis
+    util.create_folder(output_analysis)
+    analysis.store_triad_count(output, output_analysis, similar=True)

@@ -1,11 +1,23 @@
+import configparser
 import operator
+import os
 import random
 
 import numpy as np
+import pandas as pd
 from niapy.algorithms import Individual, default_individual_init
 from niapy.algorithms.basic import GeneticAlgorithm
 from niapy.algorithms.basic.ga import tournament_selection, uniform_crossover, uniform_mutation
 from problem import TriadIndividual
+
+config = configparser.ConfigParser()
+config.read(os.path.join(os.pardir, 'config.ini'))
+config = config['default']
+
+output_analysis = config['analysis_output_location']
+final_population = config['final_population']
+
+HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
 
 def single_point_crossover(pop, ic, _cr, rng, task, new_pop, algorithm):
@@ -99,11 +111,13 @@ def old_mutation(pop, individual, mr, task, rng, distance_categories=20, angle_c
 
 class GeneticAlgorithmModified(GeneticAlgorithm):
 
-    def __init__(self, population_size=100, tournament_size=2, mutation_rate=0.25, crossover_rate=0.25,
+    def __init__(self, type, iteration, population_size=100, tournament_size=2, mutation_rate=0.25, crossover_rate=0.25,
                  selection=tournament_selection, crossover=uniform_crossover, mutation=uniform_mutation, *args,
                  **kwargs):
         """Initialize GeneticAlgorithm.
         Args:
+            type (String): Algorithm name.
+            iteration (int): Ordinal number of algorithm iteration in main.
             population_size (Optional[int]): Population size.
             tournament_size (Optional[int]): Tournament selection.
             mutation_rate (Optional[int]): Mutation rate.
@@ -130,6 +144,8 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                          individual_type=kwargs.pop('individual_type', Individual),
                          initialization_function=kwargs.pop('initialization_function', default_individual_init),
                          *args, **kwargs)
+        self.type = type
+        self.iteration = iteration
         self.tournament_size = tournament_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
@@ -173,5 +189,18 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
         population_reduced = sorted(population, key=operator.attrgetter('f'), reverse=True)[-self.population_size:]
+
+        population_parameter_array = []
+        for i in range(len(population_reduced)):
+            individual = [parameter for parameter in population_reduced[i]]
+            individual.append(population_reduced[i].f)
+
+            population_parameter_array.append(individual)
+
+        population_df = pd.DataFrame(population_parameter_array)
+        population_df.to_csv(
+            os.path.join(final_population, self.type + str(self.iteration) + ".csv"),
+            header=HEADER,
+            index=False)
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}
