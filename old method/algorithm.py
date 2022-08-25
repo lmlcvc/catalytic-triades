@@ -198,6 +198,8 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
             population_parameter_array.append(individual)
 
         population_df = pd.DataFrame(population_parameter_array)
+        population_df.columns = HEADER
+        population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
         population_df.to_csv(
             os.path.join(final_population, self.type + str(self.iteration) + ".csv"),
             header=HEADER,
