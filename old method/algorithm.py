@@ -152,6 +152,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         self.selection = selection
         self.crossover = crossover
         self.mutation = mutation
+        self.population = []
 
     def run_iteration(self, task, population, population_fitness, best_x, best_fitness, **params):
         r"""Core function of GeneticAlgorithm algorithm.
@@ -188,7 +189,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         population = [item for sublist in double_list for item in sublist]
         best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
-        population_reduced = sorted(population, key=operator.attrgetter('f'), reverse=True)[-self.population_size:]
+        population_reduced = sorted(population, key=operator.attrgetter('f'))[:self.population_size]
 
         population_parameter_array = []
         for i in range(len(population_reduced)):
@@ -197,6 +198,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
             population_parameter_array.append(individual)
 
+        """
         population_df = pd.DataFrame(population_parameter_array)
         population_df.columns = HEADER
         population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
@@ -204,5 +206,8 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
             os.path.join(final_population, self.type + str(self.iteration) + ".csv"),
             header=HEADER,
             index=False)
+        """
+
+        self.population = population_parameter_array
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}

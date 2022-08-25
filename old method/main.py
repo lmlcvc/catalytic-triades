@@ -57,7 +57,6 @@ if __name__ == "__main__":
     # - - - - - - - - - -
 
     # run genethic algorithm
-    """
     util.create_folder(ga_output)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
     util.create_folder(final_population)
@@ -74,13 +73,23 @@ if __name__ == "__main__":
                                                   initialization_function=problem.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
 
-        best = algo.run(task=task)
+        algo.run(task=task)
 
-        best_list = list(best[0])  # best result parameters
-        best_list.append(best[1])  # append fitness to best
+        population_df = pd.DataFrame(algo.population)
+        population_df.columns = HEADER
 
-        best_df = pd.DataFrame(best_list).T
+        # TODO: write this as util function
+        population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
+        population_df.to_csv(
+            os.path.join(final_population, algo.type + str(i) + ".csv"),
+            header=HEADER,
+            index=False)
+
+        best = population_df.iloc[0]  # best result
+        best_df = pd.DataFrame(best, index=HEADER).T
+        print(best_df)
         most_common_df = pd.concat([most_common_df, best_df])
+
     most_common_df.to_csv(file_most_common, header=HEADER, index=False)
     file_most_common.close()
     print("MOST COMMON EVALUATED")
@@ -109,7 +118,6 @@ if __name__ == "__main__":
         enzyme_common_df = pd.concat([enzyme_common_df, best_df])
     enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
     file_enzyme_common.close()
-    """
 
     # results analysis
     util.create_folder(output_analysis)

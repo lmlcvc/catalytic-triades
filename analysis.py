@@ -50,7 +50,7 @@ def store_best_individual_occurrences(ga_directory, population_directory, output
                 continue
             else:
                 iteration_csv = pd.read_csv(os.path.join(population_directory, population_file), header=0)
-                iteration_csv = iteration_csv.drop_duplicates()
+                iteration_csv = iteration_csv.drop_duplicates(keep='first')
 
                 populations_df = populations_df.append(iteration_csv)
 
@@ -66,11 +66,7 @@ def store_best_individual_occurrences(ga_directory, population_directory, output
 
             iteration_result.append(occurrences)
 
-            print(iteration_result)
-
             iteration_result_df = pd.DataFrame(iteration_result).T
             iteration_result_df.columns = HEADER_OCCURRENCES
             result_df = result_df.append(iteration_result_df)
-        print(result_df)
         result_df.to_csv(os.path.join(output_directory, filename), header=HEADER_OCCURRENCES)
-
