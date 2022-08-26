@@ -26,6 +26,8 @@ ga_enzyme_common = config['ga_enzyme_common']
 
 output_analysis = config['analysis_output_location']
 final_population = config['final_population']
+best_occurrences = config['best_occurrences']
+similarity = config['similarity']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
@@ -103,10 +105,16 @@ if __name__ == "__main__":
                                                                                   header=HEADER,
                                                                                   destination=final_population,
                                                                                   algo_type=algo.type, iteration=i)])
-    enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
+    enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
     file_enzyme_common.close()
 
     # results analysis
     util.create_folder(output_analysis)
+    util.create_folder(best_occurrences)
+    util.create_folder(similarity)
+
     analysis.store_triad_count(output, output_analysis, similar=True)
-    analysis.store_best_individual_occurrences(ga_output, final_population, output_analysis)
+    analysis.store_best_individual_occurrences(ga_output, final_population, best_occurrences)
+
+    analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals
+    analysis.store_similarity_population(final_population, similarity)  # similarity between population top 10
