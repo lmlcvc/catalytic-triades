@@ -75,24 +75,12 @@ if __name__ == "__main__":
 
         algo.run(task=task)
 
-        population_df = pd.DataFrame(algo.population)
-        population_df.columns = HEADER
-
-        # TODO: write this as util function
-        population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
-        population_df.to_csv(
-            os.path.join(final_population, algo.type + str(i) + ".csv"),
-            header=HEADER,
-            index=False)
-
-        best = population_df.iloc[0]  # best result
-        best_df = pd.DataFrame(best, index=HEADER).T
-        print(best_df)
-        most_common_df = pd.concat([most_common_df, best_df])
-
+        most_common_df = pd.concat([most_common_df, util.store_iteration_info(population=algo.population,
+                                                                              header=HEADER,
+                                                                              destination=final_population,
+                                                                              algo_type=algo.type, iteration=i)])
     most_common_df.to_csv(file_most_common, header=HEADER, index=False)
     file_most_common.close()
-    print("MOST COMMON EVALUATED")
 
     #####
 
@@ -109,13 +97,12 @@ if __name__ == "__main__":
                                                   crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
-        best = algo.run(task=task)
+        algo.run(task=task)
 
-        best_list = list(best[0])  # best result parameters
-        best_list.append(best[1])  # append fitness to best
-
-        best_df = pd.DataFrame(best_list).T
-        enzyme_common_df = pd.concat([enzyme_common_df, best_df])
+        enzyme_common_df = pd.concat([enzyme_common_df, util.store_iteration_info(population=algo.population,
+                                                                                  header=HEADER,
+                                                                                  destination=final_population,
+                                                                                  algo_type=algo.type, iteration=i)])
     enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
     file_enzyme_common.close()
 

@@ -162,3 +162,21 @@ def get_triad_ranges_old(triads_all_df):
             "Dist_Base_Nuc_max": triads_all_df["Dist_Base_Nuc"].max(),
             "Angle_Nuc_min": triads_all_df["Angle_Nuc"].min(), "Angle_Nuc_max": triads_all_df["Angle_Nuc"].max(),
             "Angle_Acid_min": triads_all_df["Angle_Acid"].min(), "Angle_Acid_max": triads_all_df["Angle_Acid"].max()}
+
+
+def store_iteration_info(population, header, destination, algo_type, iteration):
+    # write final population to file
+    population_df = pd.DataFrame(population)
+    population_df.columns = header
+
+    population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
+    population_df.to_csv(
+        os.path.join(destination, algo_type + str(iteration) + ".csv"),
+        header=header,
+        index=False)
+
+    # write best individual to file
+    best = population_df.iloc[0]  # best result
+    best_df = pd.DataFrame(best, index=header).T
+
+    return best_df
