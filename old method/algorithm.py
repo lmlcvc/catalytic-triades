@@ -153,6 +153,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         self.crossover = crossover
         self.mutation = mutation
         self.population = []
+        self.fitness = {'min': [], 'avg': [], 'max': []}
 
     def run_iteration(self, task, population, population_fitness, best_x, best_fitness, **params):
         r"""Core function of GeneticAlgorithm algorithm.
@@ -176,20 +177,15 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         for i in range(self.population_size):
             ind_tmp = self.selection(population, i, self.tournament_size, best_x, self.rng)
             ind = self.individual_type(ind_tmp.x, ind_tmp.f)
-            # ind.x = self.crossover(population, i, self.crossover_rate, self.rng, task=task, new_pop=new_pop,
-            #                       algorithm=self)
-
             self.crossover(population, i, self.crossover_rate, self.rng, task=task,
                            new_pop=new_pop, algorithm=self)
-
-            # if ind.f < best_fitness:
-            #     best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
         double_list = [population, new_pop]
         population = [item for sublist in double_list for item in sublist]
         best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
         population_reduced = sorted(population, key=operator.attrgetter('f'))[:self.population_size]
+        # population_r_fitness = [i.f for i in population_reduced]
 
         population_parameter_array = []
         for i in range(len(population_reduced)):
@@ -197,6 +193,24 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
             individual.append(population_reduced[i].f)
 
             population_parameter_array.append(individual)
+
+        print("POPULATION REDUCED")
+        print(i.f for i in population_reduced)
+        print("----------\nPOPULATION PARAMETER ARRAY")
+        print(population_parameter_array)
+        population_r_fitness = [individual[-1] for individual in population_parameter_array]
+
+        # TODO: infinite values
+        min_f = max(population_r_fitness) * -1
+        avg_f = sum(population_r_fitness) / len(population_r_fitness) * -1
+        max_f = min(population_r_fitness) * -1
+        if min_f != np.inf and min_f != -np.inf \
+                and avg_f != np.inf and avg_f != -np.inf \
+                and max_f != np.inf and max_f != -np.inf:
+            self.fitness['min'].append(min_f)
+            self.fitness['avg'].append(avg_f)
+            self.fitness['max'].append(max_f)
+            print(self.fitness)
 
         """
         population_df = pd.DataFrame(population_parameter_array)

@@ -66,7 +66,7 @@ if __name__ == "__main__":
     most_common_df = pd.DataFrame()
     for i in range(10):
         task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                    max_evals=1000, lower=0.0, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=i, population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -92,7 +92,8 @@ if __name__ == "__main__":
     for i in range(10):
         task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                         triads_count_dict=triads_dict_count, method='old'),
-                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                    max_evals=1000, lower=0.0, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+
         algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=i, population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
