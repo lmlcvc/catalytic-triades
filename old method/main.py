@@ -11,6 +11,7 @@ import configparser
 import util
 import problem
 import algorithm
+from task import TaskModified
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.pardir, 'config.ini'))
@@ -28,6 +29,7 @@ output_analysis = config['analysis_output_location']
 final_population = config['final_population']
 best_occurrences = config['best_occurrences']
 similarity = config['similarity']
+plots = config['plots']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
@@ -62,13 +64,15 @@ if __name__ == "__main__":
     util.create_folder(ga_output)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
     util.create_folder(final_population)
+    util.create_folder(plots)
 
     most_common_df = pd.DataFrame()
     for i in range(10):
-        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                    max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+        task = TaskModified(
+            problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
+            max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
-        algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=i, population_size=100,
+        algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
@@ -76,12 +80,13 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
-        task.plot_convergence(x_axis="evals")
+        task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
         most_common_df = pd.concat([most_common_df, util.store_iteration_info(population=algo.population,
                                                                               header=HEADER,
                                                                               destination=final_population,
-                                                                              algo_type=algo.type, iteration=i)])
+                                                                              algo_type=algo.type,
+                                                                              iteration=str(i).zfill(2))])
     most_common_df.to_csv(file_most_common, header=HEADER, index=False)
     file_most_common.close()
 
@@ -91,22 +96,25 @@ if __name__ == "__main__":
     enzyme_common_df = pd.DataFrame()
 
     for i in range(10):
-        task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
-                                                        triads_count_dict=triads_dict_count, method='old'),
-                    max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+        task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
+                                                                     triads_count_dict=triads_dict_count, method='old'),
+                                 max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
-        algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=i, population_size=100,
+        algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
+
         algo.run(task=task)
+        task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
         enzyme_common_df = pd.concat([enzyme_common_df, util.store_iteration_info(population=algo.population,
                                                                                   header=HEADER,
                                                                                   destination=final_population,
-                                                                                  algo_type=algo.type, iteration=i)])
+                                                                                  algo_type=algo.type,
+                                                                                  iteration=str(i).zfill(2))])
     enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
     file_enzyme_common.close()
 

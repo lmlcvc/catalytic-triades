@@ -117,7 +117,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         """Initialize GeneticAlgorithm.
         Args:
             type (String): Algorithm name.
-            iteration (int): Ordinal number of algorithm iteration in main.
+            iteration (str): Ordinal number of algorithm iteration in main.
             population_size (Optional[int]): Population size.
             tournament_size (Optional[int]): Tournament selection.
             mutation_rate (Optional[int]): Mutation rate.
