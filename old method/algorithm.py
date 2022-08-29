@@ -176,14 +176,9 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         for i in range(self.population_size):
             ind_tmp = self.selection(population, i, self.tournament_size, best_x, self.rng)
             ind = self.individual_type(ind_tmp.x, ind_tmp.f)
-            # ind.x = self.crossover(population, i, self.crossover_rate, self.rng, task=task, new_pop=new_pop,
-            #                       algorithm=self)
 
             self.crossover(population, i, self.crossover_rate, self.rng, task=task,
                            new_pop=new_pop, algorithm=self)
-
-            # if ind.f < best_fitness:
-            #     best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
         double_list = [population, new_pop]
         population = [item for sublist in double_list for item in sublist]
@@ -198,16 +193,13 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
             population_parameter_array.append(individual)
 
-        """
-        population_df = pd.DataFrame(population_parameter_array)
-        population_df.columns = HEADER
-        population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
-        population_df.to_csv(
-            os.path.join(final_population, self.type + str(self.iteration) + ".csv"),
-            header=HEADER,
-            index=False)
-        """
+        population_r_fitness = [i.f for i in population_reduced]
+        print(self.iteration)
+        print(min(population_r_fitness))
+        print(max(population_r_fitness))
 
         self.population = population_parameter_array
+
+        print(task.fitness_evals)
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}

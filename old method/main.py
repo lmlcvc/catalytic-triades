@@ -26,6 +26,8 @@ ga_enzyme_common = config['ga_enzyme_common']
 
 output_analysis = config['analysis_output_location']
 final_population = config['final_population']
+best_occurrences = config['best_occurrences']
+similarity = config['similarity']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
@@ -64,7 +66,7 @@ if __name__ == "__main__":
     most_common_df = pd.DataFrame()
     for i in range(10):
         task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                    max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=i, population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -74,6 +76,7 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
+        task.plot_convergence(x_axis="evals")
 
         most_common_df = pd.concat([most_common_df, util.store_iteration_info(population=algo.population,
                                                                               header=HEADER,
@@ -90,7 +93,8 @@ if __name__ == "__main__":
     for i in range(10):
         task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                         triads_count_dict=triads_dict_count, method='old'),
-                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                    max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+
         algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=i, population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
@@ -103,10 +107,16 @@ if __name__ == "__main__":
                                                                                   header=HEADER,
                                                                                   destination=final_population,
                                                                                   algo_type=algo.type, iteration=i)])
-    enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
+    enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
     file_enzyme_common.close()
 
     # results analysis
     util.create_folder(output_analysis)
+    util.create_folder(best_occurrences)
+    util.create_folder(similarity)
+
     analysis.store_triad_count(output, output_analysis, similar=True)
-    analysis.store_best_individual_occurrences(ga_output, final_population, output_analysis)
+    analysis.store_best_individual_occurrences(ga_output, final_population, best_occurrences)
+
+    analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals
+    analysis.store_similarity_population(final_population, similarity)  # similarity between population top 10

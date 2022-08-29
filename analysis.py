@@ -3,6 +3,8 @@ from operator import itemgetter
 
 import pandas as pd
 
+import util
+
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 HEADER_OCCURRENCES = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness', 'occurences']
 
@@ -40,9 +42,7 @@ def store_triad_count(directory, output_directory, similar=True):
 def store_best_individual_occurrences(ga_directory, population_directory, output_directory):
     for filename in os.listdir(ga_directory):
         best_df = pd.read_csv(os.path.join(ga_directory, filename), header=0)
-        print(best_df)
         populations_df = pd.DataFrame(columns=HEADER)
-        print("here")
         result_df = pd.DataFrame(columns=HEADER_OCCURRENCES)
 
         for population_file in os.listdir(population_directory):
@@ -70,3 +70,44 @@ def store_best_individual_occurrences(ga_directory, population_directory, output
             iteration_result_df.columns = HEADER_OCCURRENCES
             result_df = result_df.append(iteration_result_df)
         result_df.to_csv(os.path.join(output_directory, filename), header=HEADER_OCCURRENCES)
+
+
+def store_similarity(lists, output_file):
+    similarity_lists = []
+
+    for name in lists.keys():
+        triad_list = lists[name]
+        similarity = util.list_similarities(triad_list)
+
+        similarity_lists.append([name, similarity])
+
+    similarity_df = pd.DataFrame(similarity_lists, columns=['name', 'similarity'])
+    similarity_df = similarity_df.sort_values(by=['name'])
+    similarity_df.to_csv(output_file)
+
+
+def store_similarity_best(directory, output_directory):
+    lists = {}
+
+    for filename in os.listdir(directory):
+        df = pd.read_csv(os.path.join(directory, filename), header=0)
+        df = df.drop(columns=['fitness'])
+        triad_list = df.values.tolist()
+
+        lists[filename.strip(".csv")] = triad_list
+
+    store_similarity(lists, os.path.join(output_directory, "best.csv"))
+
+
+def store_similarity_population(directory, output_directory):
+    lists = {}
+
+    for filename in os.listdir(directory):
+        df = pd.read_csv(os.path.join(directory, filename), header=0)
+        df = df.head(10)
+        df = df.drop(columns=['fitness'])
+        triad_list = df.values.tolist()
+
+        lists[filename.strip(".csv")] = triad_list
+
+    store_similarity(lists, os.path.join(output_directory, "population.csv"))
