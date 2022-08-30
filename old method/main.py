@@ -72,7 +72,7 @@ if __name__ == "__main__":
     for i in range(5):
         task = TaskModified(
             problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-            max_evals=1000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+            max_evals=350, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -98,10 +98,10 @@ if __name__ == "__main__":
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
-    for i in range(5):
+    for i in range(10):
         task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                                 triads_count_dict=triads_dict_count, method='old'),
-                            max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_evals=200, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -114,12 +114,12 @@ if __name__ == "__main__":
 
         task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
-        enzyme_common_df = pd.concat([enzyme_common_df, util.store_iteration_info(population=algo.population,
+        """enzyme_common_df = pd.concat([enzyme_common_df, util.store_iteration_info(population=algo.population,
                                                                                   header=HEADER,
                                                                                   destination=final_population,
                                                                                   algo_type=algo.type,
                                                                                   iteration=str(i).zfill(2))])
-    enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
+    enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)"""
     file_enzyme_common.close()
 
     # results analysis

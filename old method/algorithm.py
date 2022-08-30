@@ -8,6 +8,8 @@ import pandas as pd
 from niapy.algorithms import Individual, default_individual_init
 from niapy.algorithms.basic import GeneticAlgorithm
 from niapy.algorithms.basic.ga import tournament_selection, uniform_crossover, uniform_mutation
+
+import util
 from problem import TriadIndividual
 
 config = configparser.ConfigParser()
@@ -216,7 +218,13 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
         # self.population = population_parameter_array
 
-        self.population = population_reduced
+        # self.population = population_reduced
+
+        util.store_iteration_info(population=population_reduced,
+                                  header=HEADER,
+                                  destination=final_population,
+                                  algo_type=self.type,
+                                  iteration=self.iteration)
 
         """print("end population")
         for individual in population:

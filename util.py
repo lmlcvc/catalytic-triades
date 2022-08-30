@@ -3,6 +3,7 @@ import math
 import os
 from collections import defaultdict
 
+import numpy
 import numpy as np
 import pandas as pd
 from Bio.PDB.PDBParser import PDBParser
@@ -167,23 +168,29 @@ def get_triad_ranges_old(triads_all_df):
 
 def store_iteration_info(population, header, destination, algo_type, iteration):
     # write final population to file
-    population_df = pd.DataFrame(population)
-    print(population_df)
-    population_df.columns = header
+    for individual in population:
+        print(individual.x)
+        print(individual.f)
 
+    x_list = [i.x.tolist() for i in population]
+    x_df = pd.DataFrame(x_list)
 
-    population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
-    population_df.to_csv(
+    f_df = pd.DataFrame([i.f * -1 for i in population])
+    final_df = pd.concat([x_df, f_df], axis=1)
+    print(final_df)
+
+    final_df.to_csv(
         os.path.join(destination, algo_type + str(iteration) + ".csv"),
         header=header,
         index=False)
 
     # write best individual to file
-    best = population_df.groupby("fitness").max()  # best result
+    # TODO: riješiti ovo drugačije
+    """best = final_df.groupby("fitness").max()  # best result
     print(best)
     best_df = pd.DataFrame(best, index=header).T
 
-    return best_df
+    return best_df"""
 
 
 def levenshtein(a, b):
