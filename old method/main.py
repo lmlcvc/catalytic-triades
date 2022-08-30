@@ -25,7 +25,7 @@ ga_most_common = config['ga_most_common']
 ga_enzyme_common = config['ga_enzyme_common']
 
 output_analysis = config['analysis_output_location']
-final_population = config['final_population']
+best_occurrences = config['best_occurrences']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
@@ -56,13 +56,12 @@ if __name__ == "__main__":
 
     # - - - - - - - - - -
 
-    # run genethic algorithm
+    # run genetic algorithm
     util.create_folder(ga_output)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
-    util.create_folder(final_population)
 
     most_common_df = pd.DataFrame()
-    for i in range(10):
+    for i in range(3):
         task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
                     max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
@@ -85,7 +84,7 @@ if __name__ == "__main__":
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
-    for i in range(10):
+    for i in range(3):
         task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                         triads_count_dict=triads_dict_count, method='old'),
                     max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
@@ -98,13 +97,13 @@ if __name__ == "__main__":
         algo.run(task=task)
 
         enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population,
-                                                                                header=HEADER,
-                                                                                destination=final_population,
-                                                                                algo_type=algo.type, iteration=i)])
-    enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
+                                                                                header=HEADER)])
+    enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
     file_enzyme_common.close()
 
     # results analysis
     util.create_folder(output_analysis)
+    util.create_folder(best_occurrences)
+
     analysis.store_triad_count(output, output_analysis, similar=True)
-    analysis.store_best_individual_occurrences(ga_output, final_population, output_analysis)
+    analysis.store_best_individual_occurrences(ga_output, HEADER, best_occurrences)
