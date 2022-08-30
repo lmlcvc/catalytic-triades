@@ -11,6 +11,7 @@ import configparser
 import util
 import problem
 import algorithm
+from task import TaskModified
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.pardir, 'config.ini'))
@@ -27,6 +28,8 @@ ga_enzyme_common = config['ga_enzyme_common']
 output_analysis = config['analysis_output_location']
 best_occurrences = config['best_occurrences']
 similarity = config['similarity']
+fitness = config['fitness']
+plots = config['plots']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
@@ -59,14 +62,16 @@ if __name__ == "__main__":
 
     # run genetic algorithm
     util.create_folder(ga_output)
+    util.create_folder(fitness)
+    util.create_folder(plots)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
 
     most_common_df = pd.DataFrame()
     for i in range(3):
-        task = Task(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+        task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
+                            max_evals=500, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
-        algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=i, population_size=100,
+        algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
@@ -74,6 +79,7 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
+        task.convergence_data(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=fitness, x_axis="evals")
 
         most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population,
                                                                             header=HEADER)])
@@ -86,16 +92,19 @@ if __name__ == "__main__":
     enzyme_common_df = pd.DataFrame()
 
     for i in range(3):
-        task = Task(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
-                                                        triads_count_dict=triads_dict_count, method='old'),
-                    max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
-        algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=i, population_size=100,
+        task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
+                                                                triads_count_dict=triads_dict_count, method='old'),
+                            max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+
+        algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
                                                   initialization_function=problem.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
+
         algo.run(task=task)
+        task.convergence_data(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=fitness, x_axis="evals")
 
         enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population,
                                                                                 header=HEADER)])
