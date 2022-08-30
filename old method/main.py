@@ -26,6 +26,7 @@ ga_enzyme_common = config['ga_enzyme_common']
 
 output_analysis = config['analysis_output_location']
 best_occurrences = config['best_occurrences']
+similarity = config['similarity']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
@@ -104,6 +105,8 @@ if __name__ == "__main__":
     # results analysis
     util.create_folder(output_analysis)
     util.create_folder(best_occurrences)
+    util.create_folder(similarity)
 
     analysis.store_triad_count(output, output_analysis, similar=True)
     analysis.store_best_individual_occurrences(ga_output, HEADER, best_occurrences)
+    analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals

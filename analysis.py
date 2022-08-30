@@ -3,6 +3,8 @@ from operator import itemgetter
 
 import pandas as pd
 
+import util
+
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 HEADER_OCCURRENCES = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness', 'occurences']
 
@@ -42,3 +44,30 @@ def store_best_individual_occurrences(ga_directory, header, output_directory):
         best_df = pd.read_csv(os.path.join(ga_directory, filename), header=0)
         count_df = best_df.groupby(header).size().reset_index(name='Count')
         count_df.to_csv(os.path.join(output_directory, filename), header=HEADER_OCCURRENCES, index_label=False)
+
+
+def store_similarity(lists, output_file):
+    similarity_lists = []
+
+    for name in lists.keys():
+        triad_list = lists[name]
+        similarity = util.list_similarities(triad_list)
+
+        similarity_lists.append([name, similarity])
+
+    similarity_df = pd.DataFrame(similarity_lists, columns=['name', 'similarity'])
+    similarity_df = similarity_df.sort_values(by=['name'])
+    similarity_df.to_csv(output_file)
+
+
+def store_similarity_best(directory, output_directory):
+    lists = {}
+
+    for filename in os.listdir(directory):
+        df = pd.read_csv(os.path.join(directory, filename), header=0)
+        df = df.drop(columns=['fitness'])
+        triad_list = df.values.tolist()
+
+        lists[filename.strip(".csv")] = triad_list
+
+    store_similarity(lists, os.path.join(output_directory, "best.csv"))
