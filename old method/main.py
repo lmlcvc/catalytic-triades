@@ -75,10 +75,8 @@ if __name__ == "__main__":
 
         algo.run(task=task)
 
-        most_common_df = pd.concat([most_common_df, util.store_iteration_info(population=algo.population,
-                                                                              header=HEADER,
-                                                                              destination=final_population,
-                                                                              algo_type=algo.type, iteration=i)])
+        most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population,
+                                                                            header=HEADER)])
     most_common_df.to_csv(file_most_common, header=HEADER, index=False)
     file_most_common.close()
 
@@ -99,10 +97,10 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
         algo.run(task=task)
 
-        enzyme_common_df = pd.concat([enzyme_common_df, util.store_iteration_info(population=algo.population,
-                                                                                  header=HEADER,
-                                                                                  destination=final_population,
-                                                                                  algo_type=algo.type, iteration=i)])
+        enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population,
+                                                                                header=HEADER,
+                                                                                destination=final_population,
+                                                                                algo_type=algo.type, iteration=i)])
     enzyme_common_df.to_csv(file_enzyme_common, header=False, index=False)
     file_enzyme_common.close()
 
