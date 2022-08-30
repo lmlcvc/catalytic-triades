@@ -172,6 +172,11 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                 5. Additional arguments.
         """
 
+        print("initial population")
+        for individual in population:
+            print(individual.x)
+            print(individual.f)
+
         new_pop = []
         for i in range(self.population_size):
             ind_tmp = self.selection(population, i, self.tournament_size, best_x, self.rng)
@@ -181,18 +186,41 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                            new_pop=new_pop, algorithm=self)
 
         double_list = [population, new_pop]
-        population = [item for sublist in double_list for item in sublist]
+        print("population before double")
+        for individual in population:
+            print(individual.x)
+            print(individual.f)
+
+        all_population = [item for sublist in double_list for item in sublist]
         best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
-        population_reduced = sorted(population, key=operator.attrgetter('f'))[:self.population_size]
+        print("all_population")
+        for individual in all_population:
+            print(individual.x)
+            print(individual.f)
 
-        population_parameter_array = []
+        population_reduced = sorted(all_population, key=operator.attrgetter('f'))[:self.population_size]
+        print("reduced")
+        for individual in population_reduced:
+            print(individual.x)
+            print(individual.f)
+
+        """population_parameter_array = []
         for i in range(len(population_reduced)):
             individual = [parameter for parameter in population_reduced[i]]
+            print(individual)
             individual.append(population_reduced[i].f)
+            print(individual)
 
-            population_parameter_array.append(individual)
+            population_parameter_array.append(individual)"""
 
-        self.population = population_parameter_array
+        # self.population = population_parameter_array
+
+        self.population = population_reduced
+
+        """print("end population")
+        for individual in population:
+            print(individual.x)
+            print(individual.f)"""
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}

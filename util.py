@@ -168,7 +168,9 @@ def get_triad_ranges_old(triads_all_df):
 def store_iteration_info(population, header, destination, algo_type, iteration):
     # write final population to file
     population_df = pd.DataFrame(population)
+    print(population_df)
     population_df.columns = header
+
 
     population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
     population_df.to_csv(
@@ -177,7 +179,8 @@ def store_iteration_info(population, header, destination, algo_type, iteration):
         index=False)
 
     # write best individual to file
-    best = population_df.iloc[0]  # best result
+    best = population_df.groupby("fitness").max()  # best result
+    print(best)
     best_df = pd.DataFrame(best, index=header).T
 
     return best_df
