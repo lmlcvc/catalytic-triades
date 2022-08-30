@@ -29,6 +29,7 @@ output_analysis = config['analysis_output_location']
 final_population = config['final_population']
 best_occurrences = config['best_occurrences']
 similarity = config['similarity']
+fitness = config['fitness']
 plots = config['plots']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
@@ -64,6 +65,7 @@ if __name__ == "__main__":
     util.create_folder(ga_output)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
     util.create_folder(final_population)
+    util.create_folder(fitness)
     util.create_folder(plots)
 
     most_common_df = pd.DataFrame()
@@ -80,6 +82,8 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
+
+        # task.convergence_data(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=fitness, x_axis="evals")
         task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
         most_common_df = pd.concat([most_common_df, util.store_iteration_info(population=algo.population,
@@ -97,8 +101,8 @@ if __name__ == "__main__":
 
     for i in range(10):
         task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
-                                                                     triads_count_dict=triads_dict_count, method='old'),
-                                 max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                                                                triads_count_dict=triads_dict_count, method='old'),
+                            max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -108,6 +112,8 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
+
+        task.convergence_data(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=fitness, x_axis="evals")
         task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
         enzyme_common_df = pd.concat([enzyme_common_df, util.store_iteration_info(population=algo.population,

@@ -193,13 +193,6 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
             population_parameter_array.append(individual)
 
-        population_r_fitness = [i.f for i in population_reduced]
-        print(self.iteration)
-        print(min(population_r_fitness))
-        print(max(population_r_fitness))
-
         self.population = population_parameter_array
-
-        print(task.fitness_evals)
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}
