@@ -1,4 +1,6 @@
 import configparser
+import itertools
+import math
 import operator
 import os
 import random
@@ -8,6 +10,9 @@ import pandas as pd
 from niapy.algorithms import Individual, default_individual_init
 from niapy.algorithms.basic import GeneticAlgorithm
 from niapy.algorithms.basic.ga import tournament_selection, uniform_crossover, uniform_mutation
+from niapy.util import objects_to_array
+
+import util
 from problem import TriadIndividual
 
 config = configparser.ConfigParser()
@@ -16,8 +21,73 @@ config = config['default']
 
 output_analysis = config['analysis_output_location']
 final_population = config['final_population']
+encoded_directory = config['encoded_location']  # TODO: adapt to other methods if necessary
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
+HEADER_NO_FITNESS = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
+
+
+# TODO: split code into multiple methods
+def population_init_mixed(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
+                          angle_categories=20, **kwargs):
+    triads_df = util.read_triads_df(encoded_directory)
+    n_triads = triads_df.shape[0]
+
+    if n_triads > 0.2 * population_size:
+        n_triads = math.floor(0.2 * population_size)
+
+    n_permutations = population_size - n_triads
+
+    # generate all possible permutations
+    options = [[0, 1], [0, 1], [0, 1], list(range(0, distance_categories)),
+               list(range(0, distance_categories))]  # atom types and 2 distances
+
+    if all_distances:  # append list for third distance
+        options.append(range(0, distance_categories))
+
+    if angles:  # append lists for angles
+        options.append(range(0, angle_categories))
+        options.append(range(0, angle_categories))
+        options.append(range(0, angle_categories))
+
+    permutations = [list(a) for a in itertools.product(*options)]
+    permutations_df = pd.DataFrame(permutations, columns=HEADER_NO_FITNESS)
+
+    pop = [triads_df.sample(n=n_triads).to_numpy(), permutations_df.sample(n=n_permutations).to_numpy()]
+    pop = np.concatenate(pop, axis=0)
+
+    pop = [TriadIndividual(i) for i in pop]
+    fpop = np.asarray([x.f for x in pop])
+
+    return pop, fpop
+
+
+def population_init_random(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
+                           angle_categories=20, **kwargs):
+    # generate all possible permutations
+    options = [[0, 1], [0, 1], [0, 1], list(range(0, distance_categories)),
+               list(range(0, distance_categories))]  # atom types and 2 distances
+
+    if all_distances:  # append list for third distance
+        options.append(range(0, distance_categories))
+
+    if angles:  # append lists for angles
+        options.append(range(0, angle_categories))
+        options.append(range(0, angle_categories))
+        options.append(range(0, angle_categories))
+
+    permutations = [list(a) for a in itertools.product(*options)]
+    permutations_df = pd.DataFrame(permutations, columns=HEADER)
+
+    pop = permutations_df.sample(n=population_size).to_numpy()  # pick random n=population_size elements
+
+    fpop = np.apply_along_axis(task.eval, 1, pop)
+
+    pop = list(zip(pop, fpop))
+    pop = [TriadIndividual(i[0], i[1]) for i in pop]
+
+    fpop = np.asarray([x.f for x in pop])
+    return pop, fpop
 
 
 def single_point_crossover(pop, ic, _cr, rng, task, new_pop, algorithm):
@@ -141,7 +211,6 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                 * :func:`niapy.algorithms.basic.mutation_uros`
         """
         super().__init__(population_size,
-                         individual_type=kwargs.pop('individual_type', Individual),
                          initialization_function=kwargs.pop('initialization_function', default_individual_init),
                          *args, **kwargs)
         self.type = type
@@ -152,7 +221,26 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         self.selection = selection
         self.crossover = crossover
         self.mutation = mutation
-        self.population = []
+
+        self.population_list = []
+        self.individual_type = TriadIndividual
+
+    def run_task(self, task):
+        r"""Start the optimization.
+        Args:
+            task (Task): Task with bounds and objective function for optimization.
+        Returns:
+            Tuple[numpy.ndarray, float]:
+                1. Best individuals components found in optimization process.
+                2. Best fitness value found in optimization process.
+        See Also:
+            * :func:`niapy.algorithms.Algorithm.iteration_generator`
+        """
+        algo, xb, fxb = self.iteration_generator(task), None, 0.0
+        while not task.stopping_condition():
+            xb, fxb = next(algo)
+            task.next_iter()
+        return xb, fxb
 
     def run_iteration(self, task, population, population_fitness, best_x, best_fitness, **params):
         r"""Core function of GeneticAlgorithm algorithm.
@@ -175,21 +263,17 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         new_pop = []
         for i in range(self.population_size):
             ind_tmp = self.selection(population, i, self.tournament_size, best_x, self.rng)
-            ind = self.individual_type(ind_tmp.x, ind_tmp.f)
-            # ind.x = self.crossover(population, i, self.crossover_rate, self.rng, task=task, new_pop=new_pop,
-            #                       algorithm=self)
+            ind = TriadIndividual(ind_tmp.x)
 
             self.crossover(population, i, self.crossover_rate, self.rng, task=task,
                            new_pop=new_pop, algorithm=self)
 
-            # if ind.f < best_fitness:
-            #     best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
-
         double_list = [population, new_pop]
-        population = [item for sublist in double_list for item in sublist]
+        population_double = [item for sublist in double_list for item in sublist]
+
         best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
-        population_reduced = sorted(population, key=operator.attrgetter('f'))[:self.population_size]
+        population_reduced = sorted(population_double, key=operator.attrgetter('f'))[:self.population_size]
 
         population_parameter_array = []
         for i in range(len(population_reduced)):
@@ -198,16 +282,6 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
             population_parameter_array.append(individual)
 
-        """
-        population_df = pd.DataFrame(population_parameter_array)
-        population_df.columns = HEADER
-        population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
-        population_df.to_csv(
-            os.path.join(final_population, self.type + str(self.iteration) + ".csv"),
-            header=HEADER,
-            index=False)
-        """
-
-        self.population = population_parameter_array
+        self.population_list = population_reduced
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}

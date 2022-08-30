@@ -166,6 +166,12 @@ def get_triad_ranges_old(triads_all_df):
 
 
 def get_iteration_info(population, header):
+    print(population)
+    pop_x = [i.x for i in population]
+    pop_f = [i.f for i in population]
+    pop = [[i.x, i.f] for i in population]
+    print(pop)
+
     population_df = pd.DataFrame(population)
     population_df.columns = header
 

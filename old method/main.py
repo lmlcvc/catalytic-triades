@@ -69,19 +69,20 @@ if __name__ == "__main__":
     most_common_df = pd.DataFrame()
     for i in range(3):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                            max_evals=500, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_evals=1000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
-                                                  initialization_function=problem.population_init_mixed,
+                                                  initialization_function=algorithm.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
 
-        algo.run(task=task)
+        best = algo.run(task=task)
+        print(best)
         task.convergence_data(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=fitness, x_axis="evals")
 
-        most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population,
+        most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population_list,
                                                                             header=HEADER)])
     most_common_df.to_csv(file_most_common, header=HEADER, index=False)
     file_most_common.close()
@@ -100,13 +101,13 @@ if __name__ == "__main__":
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
-                                                  initialization_function=problem.population_init_mixed,
+                                                  initialization_function=algorithm.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
         task.convergence_data(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=fitness, x_axis="evals")
 
-        enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population,
+        enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population_list,
                                                                                 header=HEADER)])
     enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
     file_enzyme_common.close()

@@ -10,95 +10,33 @@ from niapy.problems.problem import Problem
 
 __all__ = ['MostCommonPattern']
 
+from niapy.util import objects_to_array
+
 from numpy import shape
+from numpy.random import default_rng
 
 import util
 
-HEADER = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']  # TODO: change depending on columns nr
 
-config = configparser.ConfigParser()
-config.read(os.path.join(os.pardir, 'config.ini'))
-config = config['default']
-encoded_directory = config['encoded_location']  # TODO: adapt to other methods if necessary
-
-
-# TODO: split code into multiple methods
-def population_init_mixed(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
-                          angle_categories=20, **kwargs):
-    triads_df = util.read_triads_df(encoded_directory)
-    n_triads = triads_df.shape[0]
-
-    if n_triads > 0.2 * population_size:
-        n_triads = math.floor(0.2 * population_size)
-
-    n_permutations = population_size - n_triads
-
-    # generate all possible permutations
-    options = [[0, 1], [0, 1], [0, 1], list(range(0, distance_categories)),
-               list(range(0, distance_categories))]  # atom types and 2 distances
-
-    if all_distances:  # append list for third distance
-        options.append(range(0, distance_categories))
-
-    if angles:  # append lists for angles
-        options.append(range(0, angle_categories))
-        options.append(range(0, angle_categories))
-        options.append(range(0, angle_categories))
-
-    permutations = [list(a) for a in itertools.product(*options)]
-    permutations_df = pd.DataFrame(permutations, columns=HEADER)
-
-    pop = [triads_df.sample(n=n_triads).to_numpy(), permutations_df.sample(n=n_permutations).to_numpy()]
-    pop = np.concatenate(pop, axis=0)
-
-    fpop = np.apply_along_axis(task.eval, 1, pop)
-
-    pop = list(zip(pop, fpop))
-    pop = [TriadIndividual(i[0], i[1]) for i in pop]
-
-    fpop = np.asarray([x.f for x in pop])
-    return pop, fpop
-
-
-def population_init_random(task, population_size, rng, all_distances=False, angles=False, distance_categories=20,
-                           angle_categories=20, **kwargs):
-    # generate all possible permutations
-    options = [[0, 1], [0, 1], [0, 1], list(range(0, distance_categories)),
-               list(range(0, distance_categories))]  # atom types and 2 distances
-
-    if all_distances:  # append list for third distance
-        options.append(range(0, distance_categories))
-
-    if angles:  # append lists for angles
-        options.append(range(0, angle_categories))
-        options.append(range(0, angle_categories))
-        options.append(range(0, angle_categories))
-
-    permutations = [list(a) for a in itertools.product(*options)]
-    permutations_df = pd.DataFrame(permutations, columns=HEADER)
-
-    pop = permutations_df.sample(n=population_size).to_numpy()  # pick random n=population_size elements
-
-    fpop = np.apply_along_axis(task.eval, 1, pop)
-
-    pop = list(zip(pop, fpop))
-    pop = [TriadIndividual(i[0], i[1]) for i in pop]
-
-    fpop = np.asarray([x.f for x in pop])
-    return pop, fpop
+HEADER = ['NUC', 'ACID', 'BASE', 'Dist_Nuc_Acid', 'Dist_Acid_Base']
 
 
 class TriadIndividual(Individual):
-    def __new__(cls, x, f):
-        return super(TriadIndividual, cls).__new__(cls)
+    def __init__(self, x=None, task=None, e=True, rng=None, **kwargs):
+        r"""Initialize new individual.
+        Parameters:
+            task (Optional[Task]): Optimization task.
+            rand (Optional[numpy.random.Generator]): Random generator.
+            x (Optional[numpy.ndarray]): Individuals components.
+            e (Optional[bool]): True to evaluate the individual on initialization. Default value is True.
+        """
+        super().__init__(x=None, task=None, e=False, **kwargs)
+        self.f = 0.0
+        if x is not None:
+            self.x = x if isinstance(x, np.ndarray) else np.asarray(x)
+        if e and task is not None:
+            self.evaluate(task, rng)
 
-    def __init__(self, x, f, **kwargs):
-        super().__init__(x, **kwargs)
-        self.x = x
-        self.f = f
-
-    def fitness(self):
-        return self.f
 
 
 class MostCommonPattern(Problem):
