@@ -68,22 +68,22 @@ if __name__ == "__main__":
 
     most_common_df = pd.DataFrame()
     
-    for i in range(100):
+    for i in range(5):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                            max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
-                                                  initialization_function=problem.population_init_mixed,
+                                                  initialization_function=algorithm.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
         task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
-        most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population,
-                                                                            header=HEADER)])
+        most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population_list,
+                                                                            header=HEADER, task=task)])
     most_common_df.to_csv(file_most_common, header=HEADER, index=False)
     file_most_common.close()
 
@@ -92,23 +92,23 @@ if __name__ == "__main__":
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
-    for i in range(100):
+    for i in range(5):
         task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                                 triads_count_dict=triads_dict_count, method='old'),
-                            max_evals=250, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_evals=250, optimization_type=OptimizationType.MINIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
                                                   mutation=algorithm.old_mutation,
                                                   crossover_rate=0.9, mutation_rate=0.01,
-                                                  initialization_function=problem.population_init_mixed,
+                                                  initialization_function=algorithm.population_init_mixed,
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
         task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
-        enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population,
-                                                                                header=HEADER)])
+        enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population_list,
+                                                                                header=HEADER, task=task)])
     enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
     file_enzyme_common.close()
 

@@ -48,7 +48,7 @@ def store_best_individual_occurrences(ga_directory, header, output_directory):
 
         sorted_df = count_df.sort_values(['occurrences', 'fitness'], ascending=[False, False])
 
-        sorted_df.to_csv(os.path.join(output_directory, filename), header=HEADER_OCCURRENCES)
+        count_df.to_csv(os.path.join(output_directory, filename), header=HEADER_OCCURRENCES)
 
 
 def store_similarity(lists, output_file):
