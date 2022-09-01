@@ -31,7 +31,6 @@ class TriadIndividual(Individual):
             e (Optional[bool]): True to evaluate the individual on initialization. Default value is True.
         """
         super().__init__(x=None, task=None, e=False, **kwargs)
-        self.f = 0.0
         if x is not None:
             self.x = x if isinstance(x, np.ndarray) else np.asarray(x)
         if e and task is not None:
@@ -65,7 +64,7 @@ class MostCommonPattern(Problem):
         if merged_df.empty:
             return 0
         else:
-            return merged_df['Count'].item()
+            return merged_df['Count'].item() * -1
 
 
 class EnzymeCommonPattern(Problem):
@@ -100,4 +99,4 @@ class EnzymeCommonPattern(Problem):
         if merged_df.empty:
             return 0
         else:
-            return merged_df.shape[0]
+            return merged_df.shape[0] * -1

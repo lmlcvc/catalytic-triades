@@ -273,7 +273,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
         best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
-        population_reduced = sorted(population_double, key=operator.attrgetter('f'))[:self.population_size]
+        population_reduced = sorted(population_double, key=operator.attrgetter('f'))[-self.population_size:]
 
         population_parameter_array = []
         for i in range(len(population_reduced)):
