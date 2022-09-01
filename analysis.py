@@ -39,11 +39,16 @@ def store_triad_count(directory, output_directory, similar=True):
     output_file.write('\n'.join(count_text))
 
 
+# TODO: KeyError: 'occurrences'
 def store_best_individual_occurrences(ga_directory, header, output_directory):
     for filename in os.listdir(ga_directory):
         best_df = pd.read_csv(os.path.join(ga_directory, filename), header=0)
         count_df = best_df.groupby(header).size().reset_index(name='Count')
-        count_df.to_csv(os.path.join(output_directory, filename), header=HEADER_OCCURRENCES)
+        count_df.columns = HEADER_OCCURRENCES
+
+        sorted_df = count_df.sort_values(['occurrences', 'fitness'], ascending=[False, False])
+
+        sorted_df.to_csv(os.path.join(output_directory, filename), header=HEADER_OCCURRENCES)
 
 
 def store_similarity(lists, output_file):
