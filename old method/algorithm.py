@@ -260,33 +260,34 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                 5. Additional arguments.
         """
 
-        new_pop = []
-        for i in range(self.population_size):
-            ind_tmp = self.selection(population, i, self.tournament_size, best_x, self.rng)
-            ind = TriadIndividual(ind_tmp.x)
+        population_reduced = []
+        comp_pop = []
 
-            self.crossover(population, i, self.crossover_rate, self.rng, task=task,
-                           new_pop=new_pop, algorithm=self)
+        population_list_tmp = self.init_population(task)
+        self.population_list = population_list_tmp[0]
 
-        double_list = [population, new_pop]
-        population_double = [item for sublist in double_list for item in sublist]
+        for iteration in range(10):
+            new_pop = []
+            # print(self.population_list)
 
-        best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
+            for i in range(self.population_size):
+                ind_tmp = self.selection(self.population_list, i, self.tournament_size, best_x, self.rng)
+                ind = TriadIndividual(ind_tmp.x)
 
-        population_reduced = sorted(population_double, key=operator.attrgetter('f'))[-self.population_size:]
+                self.crossover(population, i, self.crossover_rate, self.rng, task=task,
+                               new_pop=new_pop, algorithm=self)
 
-        population_parameter_array = []
-        for i in range(len(population_reduced)):
-            individual = [parameter for parameter in population_reduced[i]]
-            individual.append(population_reduced[i].f)
+            double_list = [population, new_pop]
+            population_double = [item for sublist in double_list for item in sublist]
 
-            population_parameter_array.append(individual)
+            best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
-        self.population_list = population_reduced
-        # print(len(self.population_list))
+            population_reduced = sorted(population_double, key=operator.attrgetter('f'))[:self.population_size]
 
-        util.get_iteration_info(population=self.population_list,
-                                header=HEADER, task=task)
-        print(self)
+            self.population_list = population_reduced.copy()
+
+            util.get_iteration_info(population=self.population_list,
+                                    header=HEADER, task=task)
+            print(self)
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}

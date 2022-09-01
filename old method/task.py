@@ -51,6 +51,62 @@ class TaskModified(Task):
                 """
         super().__init__(problem, dimension, lower, upper, optimization_type, repair_function, max_evals, max_iters,
                          cutoff_value, enable_logging)
+        if isinstance(problem, str):
+            params = dict(dimension=dimension, lower=lower, upper=upper)
+            params = {key: val for key, val in params.items() if val is not None}
+            self.problem = get_problem(problem, **params)
+        elif isinstance(problem, Problem):
+            self.problem = problem
+            if dimension is not None or lower is not None or upper is not None:
+                logger.warning(
+                    'An instance of the Problem class was passed in, `dimension`, `lower` and `upper` parameters will be ignored.')
+        else:
+            raise TypeError('Unsupported type for problem: {}'.format(type(problem)))
+
+        self.optimization_type = optimization_type
+        self.dimension = self.problem.dimension
+        self.lower = self.problem.lower
+        self.upper = self.problem.upper
+        self.range = self.upper - self.lower
+        self.repair_function = repair_function
+
+        self.iters = 0
+        self.evals = 0
+
+        self.cutoff_value = -np.inf * optimization_type.value if cutoff_value is None else cutoff_value
+        self.enable_logging = enable_logging
+        self.x_f = np.inf
+        self.max_evals = max_evals
+        self.max_iters = max_iters
+        self.n_evals = []
+        self.fitness_evals = []  # fitness improvements at self.n_evals evaluations
+        self.fitness_iters = []  # best fitness at each iteration
+
+    def stopping_condition(self):
+        r"""Check if optimization task should stop.
+        Returns:
+            bool: `True` if number of function evaluations or number of algorithm iterations/generations or reference values is reach else `False`.
+        """
+        return (self.evals >= self.max_evals) or (self.iters >= self.max_iters)
+
+    def eval(self, x):
+        r"""Evaluate the solution A.
+        Args:
+            x (numpy.ndarray): Solution to evaluate.
+        Returns:
+            float: Fitness/function values of solution.
+        """
+
+        self.evals += 1
+        x_f = self.problem.evaluate(x) * self.optimization_type.value
+
+        if x_f < self.x_f * self.optimization_type.value:
+            self.x_f = x_f * self.optimization_type.value
+            self.n_evals.append(self.evals)
+            self.fitness_evals.append(x_f)
+            if self.enable_logging:
+                logger.info('evals:%d => %s' % (self.evals, self.x_f))
+        return x_f
 
     def convergence_data(self, algo_type, iteration, output_directory, x_axis='iters'):
         r"""Get values of x and y-axis for plotting covariance graph.

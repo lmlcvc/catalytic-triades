@@ -179,6 +179,8 @@ def get_iteration_info(population, header, task):
     best = population_df[population_df.fitness == population_df.fitness.max()].iloc[0]  # best result (just the first)
     best_df = pd.DataFrame(best, index=header).T
 
+    print(best_df)
+
     return best_df
 
 
