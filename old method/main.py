@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     most_common_df = pd.DataFrame()
 
-    for i in range(5):
+    for i in range(3):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
                             max_evals=1000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
-    for i in range(5):
+    for i in range(3):
         task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                                 triads_count_dict=triads_dict_count, method='old'),
                             max_evals=150, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
@@ -131,3 +131,4 @@ if __name__ == "__main__":
 
     analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals
     analysis.store_similarity_population(final_population, similarity)  # similarity between population top 10
+    analysis.store_similarity_algorithm(final_population, similarity)  # final populations top 10 similarity

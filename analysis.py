@@ -90,3 +90,20 @@ def store_similarity_population(directory, output_directory):
         lists[filename.strip(".csv")] = triad_list
 
     store_similarity(lists, os.path.join(output_directory, "population.csv"))
+
+
+def store_similarity_algorithm(directory, output_directory):
+    lists = {"most_common": [], "enzyme_common": []}
+
+    for filename in os.listdir(directory):
+        algo = ''.join([i for i in filename if not i.isdigit()])
+        algo = algo.strip("csv")
+
+        df = pd.read_csv(os.path.join(directory, filename), header=0)
+        df = df.head(10)
+        df = df.drop(columns=['fitness'])
+        triad_list = df.values.tolist()
+
+        lists[algo].extend(triad_list)
+
+    store_similarity(lists, os.path.join(output_directory, "algorithm.csv"))
