@@ -151,7 +151,6 @@ def old_mutation(pop, individual, mr, task, rng, distance_categories=20, angle_c
     individual_copy = individual.copy()
 
     if rng.random() < mr:
-        print(f"wohoooooo mooooootacija: {individual.x}")
         new_gene = -1
         gene_index = random.randrange(0, task.dimension)
 
@@ -263,37 +262,35 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         """
 
         population_reduced = []
+        new_pop = []
         self.population_list = population
 
         for i in self.population_list:
             i.evaluate(task)
 
-        for iteration in range(5):
-            new_pop = []
+        for i in range(self.population_size):
+            ind_tmp = self.selection(self.population_list, i, self.tournament_size, best_x, self.rng)
+            ind = TriadIndividual(ind_tmp.x)
+            ind.evaluate(task)
 
-            for i in range(self.population_size):
-                ind_tmp = self.selection(self.population_list, i, self.tournament_size, best_x, self.rng)
-                ind = TriadIndividual(ind_tmp.x)
-                ind.evaluate(task)
+            self.crossover(self.population_list, i, self.crossover_rate, self.rng, task=task,
+                           new_pop=new_pop, algorithm=self)
 
-                self.crossover(self.population_list, i, self.crossover_rate, self.rng, task=task,
-                               new_pop=new_pop, algorithm=self)
+        double_list = [self.population_list, new_pop]
+        population_double = [item for sublist in double_list for item in sublist]
+        for i in population_double:
+            i.evaluate(task)
 
-            double_list = [self.population_list, new_pop]
-            population_double = [item for sublist in double_list for item in sublist]
-            for i in population_double:
-                i.evaluate(task)
+        best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
-            best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
+        population_reduced = sorted(population_double, key=operator.attrgetter('f'), reverse=True)[
+                             :self.population_size]
+        for i in population_reduced:
+            print(f"{i.x} -> {i.f}")
 
-            population_reduced = sorted(population_double, key=operator.attrgetter('f'), reverse=True)[
-                                 :self.population_size]
-            for i in population_reduced:
-                print(f"{i.x} -> {i.f}")
+        self.population_list = population_reduced.copy()
 
-            self.population_list = population_reduced.copy()
-
-            for i in self.population_list:
-                i.evaluate(task)
+        for i in self.population_list:
+            i.evaluate(task)
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}

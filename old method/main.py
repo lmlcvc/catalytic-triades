@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     for i in range(5):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                            max_evals=np.inf, max_iters=1, optimization_type=OptimizationType.MAXIMIZATION,
+                            max_evals=1000, optimization_type=OptimizationType.MAXIMIZATION,
                             enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
