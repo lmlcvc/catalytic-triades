@@ -76,3 +76,17 @@ def store_similarity_best(directory, output_directory):
         lists[filename.strip(".csv")] = triad_list
 
     store_similarity(lists, os.path.join(output_directory, "best.csv"))
+
+
+def store_similarity_population(directory, output_directory):
+    lists = {}
+
+    for filename in os.listdir(directory):
+        df = pd.read_csv(os.path.join(directory, filename), header=0)
+        df = df.head(10)
+        df = df.drop(columns=['fitness'])
+        triad_list = df.values.tolist()
+
+        lists[filename.strip(".csv")] = triad_list
+
+    store_similarity(lists, os.path.join(output_directory, "population.csv"))

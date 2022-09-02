@@ -128,4 +128,6 @@ if __name__ == "__main__":
 
     analysis.store_triad_count(output, output_analysis, similar=True)
     analysis.store_best_individual_occurrences(ga_output, HEADER, best_occurrences)
+
     analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals
+    analysis.store_similarity_population(final_population, similarity)  # similarity between population top 10
