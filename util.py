@@ -172,13 +172,11 @@ def get_iteration_info(population, header, task):
         pop[-1].append(i.f)
 
     population_df = pd.DataFrame(pop, columns=header)
-    print(population_df)
 
-    population_df['fitness'] = population_df['fitness'].apply(lambda x: x * -1)
-
-    best = population_df[population_df.fitness == population_df.fitness.max()].iloc[0]  # best result (just the first)
+    best = population_df[population_df.fitness == population_df.fitness.max()].iloc[-1]  # best result (just the first)
     best_df = pd.DataFrame(best, index=header).T
 
+    print(population_df)
     print(best_df)
 
     return best_df

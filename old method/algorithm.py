@@ -81,10 +81,8 @@ def population_init_random(task, population_size, rng, all_distances=False, angl
 
     pop = permutations_df.sample(n=population_size).to_numpy()  # pick random n=population_size elements
 
-    fpop = np.apply_along_axis(task.eval, 1, pop)
-
-    pop = list(zip(pop, fpop))
-    pop = [TriadIndividual(i[0], i[1]) for i in pop]
+    pop = list(pop)
+    pop = [TriadIndividual(i[0]) for i in pop]
 
     fpop = np.asarray([x.f for x in pop])
     return pop, fpop
@@ -120,16 +118,18 @@ def single_point_crossover(pop, ic, _cr, rng, task, new_pop, algorithm):
         y[0: crossover_index] = tmp[0:crossover_index]
 
         # mutation
-        x.x = algorithm.mutation(pop, x, algorithm.mutation_rate, task, rng)
-        y.x = algorithm.mutation(pop, x, algorithm.mutation_rate, task, rng)
+        x_copy = x.copy()
+        y_copy = y.copy()
+        x_copy.x = algorithm.mutation(pop, x, algorithm.mutation_rate, task, rng)
+        y_copy.x = algorithm.mutation(pop, y, algorithm.mutation_rate, task, rng)
 
         # new fitness
-        x.evaluate(task, rng)
-        y.evaluate(task, rng)
+        x_copy.evaluate(task)
+        y_copy.evaluate(task)
 
         # append offspring to new population list
-        new_pop.append(x)
-        new_pop.append(y)
+        new_pop.append(x_copy)
+        new_pop.append(y_copy)
 
     else:
         pass
@@ -148,10 +148,12 @@ def old_mutation(pop, individual, mr, task, rng, distance_categories=20, angle_c
     Returns:
         numpy.ndarray: Mutated individual if rng.random < mr, else pop[ic].
     """
+    individual_copy = individual.copy()
+
     if rng.random() < mr:
+        print(f"wohoooooo mooooootacija: {individual.x}")
         new_gene = -1
         gene_index = random.randrange(0, task.dimension)
-        # individual = pop[ic]
 
         if 0 <= gene_index < 2:  # NUC and ACID
             new_gene = 1 - individual[gene_index]  # swap 1 with 0 and vice versa
@@ -171,12 +173,12 @@ def old_mutation(pop, individual, mr, task, rng, distance_categories=20, angle_c
         if new_gene <= -1:
             raise ValueError("Can't mutate on index -1")
         else:
-            individual[gene_index] = new_gene
+            individual_copy[gene_index] = new_gene
 
     else:
         pass
 
-    return individual.x
+    return individual_copy.x
 
 
 class GeneticAlgorithmModified(GeneticAlgorithm):
@@ -261,33 +263,39 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         """
 
         population_reduced = []
-        comp_pop = []
+        self.population_list = population
 
-        population_list_tmp = self.init_population(task)
-        self.population_list = population_list_tmp[0]
+        for i in self.population_list:
+            i.evaluate(task)
 
         for iteration in range(10):
             new_pop = []
-            # print(self.population_list)
 
             for i in range(self.population_size):
                 ind_tmp = self.selection(self.population_list, i, self.tournament_size, best_x, self.rng)
                 ind = TriadIndividual(ind_tmp.x)
+                ind.evaluate(task)
 
-                self.crossover(population, i, self.crossover_rate, self.rng, task=task,
+                self.crossover(self.population_list, i, self.crossover_rate, self.rng, task=task,
                                new_pop=new_pop, algorithm=self)
 
-            double_list = [population, new_pop]
+            double_list = [self.population_list, new_pop]
             population_double = [item for sublist in double_list for item in sublist]
+            for i in population_double:
+                i.evaluate(task)
 
             best_x, best_fitness = self.get_best(ind, ind.f, best_x, best_fitness)
 
-            population_reduced = sorted(population_double, key=operator.attrgetter('f'))[:self.population_size]
+            population_reduced = sorted(population_double, key=operator.attrgetter('f'), reverse=True)[
+                                 :self.population_size]
+            for i in population_reduced:
+                print(f"{i.x} -> {i.f}")
 
             self.population_list = population_reduced.copy()
 
             util.get_iteration_info(population=self.population_list,
                                     header=HEADER, task=task)
-            print(self)
+            for i in self.population_list:
+                i.evaluate(task)
 
         return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}

@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from niapy.task import Task, OptimizationType
 
@@ -67,10 +68,10 @@ if __name__ == "__main__":
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
 
     most_common_df = pd.DataFrame()
-    
+
     for i in range(1):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                            max_evals=2000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_evals=np.inf, max_iters=1, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     file_most_common.close()
 
     #####
-
+"""
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
@@ -120,3 +121,4 @@ if __name__ == "__main__":
     analysis.store_triad_count(output, output_analysis, similar=True)
     analysis.store_best_individual_occurrences(ga_output, HEADER, best_occurrences)
     analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals
+"""
