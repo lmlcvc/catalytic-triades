@@ -165,7 +165,7 @@ def get_triad_ranges_old(triads_all_df):
             "Angle_Acid_min": triads_all_df["Angle_Acid"].min(), "Angle_Acid_max": triads_all_df["Angle_Acid"].max()}
 
 
-def get_iteration_info(population, header, task):
+def get_iteration_info(population, algo_type, iteration, header, output_directory):
     pop = []
     for i in population:
         pop.append([g for g in i.x])
@@ -178,6 +178,7 @@ def get_iteration_info(population, header, task):
 
     print(population_df)
     print(best_df)
+    population_df.to_csv(os.path.join(output_directory, algo_type + iteration), header=True, index=False)
 
     return best_df
 

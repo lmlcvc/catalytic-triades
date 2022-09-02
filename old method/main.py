@@ -27,6 +27,7 @@ ga_most_common = config['ga_most_common']
 ga_enzyme_common = config['ga_enzyme_common']
 
 output_analysis = config['analysis_output_location']
+final_population = config['final_population']
 best_occurrences = config['best_occurrences']
 similarity = config['similarity']
 fitness = config['fitness']
@@ -63,15 +64,17 @@ if __name__ == "__main__":
 
     # run genetic algorithm
     util.create_folder(ga_output)
+    util.create_folder(final_population)
     util.create_folder(fitness)
     util.create_folder(plots)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
 
     most_common_df = pd.DataFrame()
 
-    for i in range(1):
+    for i in range(5):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                            max_evals=np.inf, max_iters=1, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_evals=np.inf, max_iters=1, optimization_type=OptimizationType.MAXIMIZATION,
+                            enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -84,7 +87,10 @@ if __name__ == "__main__":
         task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
         most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population_list,
-                                                                            header=HEADER, task=task)])
+                                                                            algo_type=algo.type,
+                                                                            iteration=str(i).zfill(2),
+                                                                            header=HEADER,
+                                                                            output_directory=final_population)])
     most_common_df.to_csv(file_most_common, header=HEADER, index=False)
     file_most_common.close()
 

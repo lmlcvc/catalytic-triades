@@ -268,7 +268,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         for i in self.population_list:
             i.evaluate(task)
 
-        for iteration in range(10):
+        for iteration in range(5):
             new_pop = []
 
             for i in range(self.population_size):
@@ -293,8 +293,6 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
             self.population_list = population_reduced.copy()
 
-            util.get_iteration_info(population=self.population_list,
-                                    header=HEADER, task=task)
             for i in self.population_list:
                 i.evaluate(task)
 
