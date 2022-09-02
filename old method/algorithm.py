@@ -10,7 +10,6 @@ import pandas as pd
 from niapy.algorithms import Individual, default_individual_init
 from niapy.algorithms.basic import GeneticAlgorithm
 from niapy.algorithms.basic.ga import tournament_selection, uniform_crossover, uniform_mutation
-from niapy.util import objects_to_array
 
 import util
 from problem import TriadIndividual
@@ -261,7 +260,6 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
                 5. Additional arguments.
         """
 
-        population_reduced = []
         new_pop = []
         self.population_list = population
 
@@ -285,8 +283,6 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
         population_reduced = sorted(population_double, key=operator.attrgetter('f'), reverse=True)[
                              :self.population_size]
-        for i in population_reduced:
-            print(f"{i.x} -> {i.f}")
 
         self.population_list = population_reduced.copy()
 

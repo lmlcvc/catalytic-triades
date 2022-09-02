@@ -1,6 +1,5 @@
-import numpy as np
 import pandas as pd
-from niapy.task import Task, OptimizationType
+from niapy.task import OptimizationType
 
 import analysis
 import clean_files as cf
@@ -73,8 +72,7 @@ if __name__ == "__main__":
 
     for i in range(5):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                            max_evals=1000, optimization_type=OptimizationType.MAXIMIZATION,
-                            enable_logging=True)
+                            max_evals=1000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -95,14 +93,14 @@ if __name__ == "__main__":
     file_most_common.close()
 
     #####
-"""
+
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
     for i in range(5):
         task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                                 triads_count_dict=triads_dict_count, method='old'),
-                            optimization_type=OptimizationType.MINIMIZATION, enable_logging=True)
+                            max_evals=150, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -115,7 +113,11 @@ if __name__ == "__main__":
         task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
 
         enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population_list,
-                                                                                header=HEADER, task=task)])
+                                                                                algo_type=algo.type,
+                                                                                iteration=str(i).zfill(2),
+                                                                                header=HEADER,
+                                                                                output_directory=final_population)])
+
     enzyme_common_df.to_csv(file_enzyme_common, header=HEADER, index=False)
     file_enzyme_common.close()
 
@@ -127,4 +129,3 @@ if __name__ == "__main__":
     analysis.store_triad_count(output, output_analysis, similar=True)
     analysis.store_best_individual_occurrences(ga_output, HEADER, best_occurrences)
     analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals
-"""

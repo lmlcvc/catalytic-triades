@@ -100,7 +100,7 @@ class TaskModified(Task):
         self.evals += 1
         x_f = self.problem.evaluate(x) * self.optimization_type.value
 
-        if x_f < self.x_f * self.optimization_type.value:
+        if x_f > self.x_f * self.optimization_type.value:
             self.x_f = x_f * self.optimization_type.value
             self.n_evals.append(self.evals)
             self.fitness_evals.append(x_f)
@@ -140,6 +140,7 @@ class TaskModified(Task):
                     r2.append(self.fitness_evals[i])
             return np.array(r1), np.array(r2)
 
+
     def plot_convergence(self, algo_type, iteration, output_directory, x_axis='iters', title='Convergence Graph'):
         """Plot a simple convergence graph.
         Args:
@@ -154,7 +155,6 @@ class TaskModified(Task):
         config = config['default']
 
         x, fitness = self.convergence_data(algo_type, iteration, config["fitness"], x_axis="evals")
-        fitness *= -1
         _, ax = plt.subplots()
         ax.plot(x, fitness)
         ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))

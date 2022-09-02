@@ -226,6 +226,5 @@ def list_similarities(x):
 
 
 def store_fitness_trends(fitness, filepath):
-    fitness = [i * -1 for i in fitness]
     fitness_df = pd.DataFrame(fitness, columns=["fitness"])
     fitness_df.to_csv(filepath, header=True, index=False)

@@ -6,7 +6,7 @@ import pandas as pd
 import util
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
-HEADER_OCCURRENCES = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness', 'occurences']
+HEADER_OCCURRENCES = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness', 'occurrences']
 
 
 def store_triad_count(directory, output_directory, similar=True):
