@@ -1,7 +1,6 @@
 import configparser
 import os
 
-import config as config
 import numpy as np
 from matplotlib import pyplot as plt, ticker
 from niapy.problems import Problem
@@ -121,7 +120,11 @@ class TaskModified(Task):
                 2. array of fitness values.
         """
         if x_axis == 'iters':
-            return np.arange(self.iters), np.array(self.fitness_iters)
+            util.store_fitness_trends(fitness=self.fitness_iters,
+                                      filepath=os.path.join(output_directory,
+                                                            "iters_" + algo_type + iteration + ".csv"))
+            return np.arange(self.iters), np.array(self.fitness_iters) * -1
+
         else:  # x_axis == 'evals'
             util.store_fitness_trends(fitness=self.fitness_evals,
                                       filepath=os.path.join(output_directory, algo_type + iteration + ".csv"))
@@ -140,7 +143,6 @@ class TaskModified(Task):
                     r2.append(self.fitness_evals[i])
             return np.array(r1), np.array(r2)
 
-
     def plot_convergence(self, algo_type, iteration, output_directory, x_axis='iters', title='Convergence Graph'):
         """Plot a simple convergence graph.
         Args:
@@ -154,7 +156,7 @@ class TaskModified(Task):
         config.read(os.path.join(os.pardir, 'config.ini'))
         config = config['default']
 
-        x, fitness = self.convergence_data(algo_type, iteration, config["fitness"], x_axis="evals")
+        x, fitness = self.convergence_data(algo_type, iteration, config["fitness"], x_axis="iters")
         _, ax = plt.subplots()
         ax.plot(x, fitness)
         ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))

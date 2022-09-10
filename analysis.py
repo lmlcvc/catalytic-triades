@@ -1,6 +1,7 @@
 import os
 from operator import itemgetter
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 import util
@@ -39,7 +40,6 @@ def store_triad_count(directory, output_directory, similar=True):
     output_file.write('\n'.join(count_text))
 
 
-# TODO: KeyError: 'occurrences'
 def store_best_individual_occurrences(ga_directory, header, output_directory):
     for filename in os.listdir(ga_directory):
         best_df = pd.read_csv(os.path.join(ga_directory, filename), header=0)
@@ -107,3 +107,20 @@ def store_similarity_algorithm(directory, output_directory):
         lists[algo].extend(triad_list)
 
     store_similarity(lists, os.path.join(output_directory, "algorithm.csv"))
+
+
+def plot_iteration_best_fitness(directory, output_directory):
+    for filename in os.listdir(directory):
+        if ".csv" not in filename:
+            continue
+
+        file_df = pd.read_csv(os.path.join(directory, filename), header=0)
+        fitness_df = file_df["fitness"]
+
+        plt.clf()
+        plt.plot(fitness_df)
+        plt.xlabel('Algorithm iteration')
+        plt.ylabel('Fitness')
+        plt.title('Results fitness')
+
+        plt.savefig(os.path.join(output_directory, filename.strip(".csv") + ".png"))

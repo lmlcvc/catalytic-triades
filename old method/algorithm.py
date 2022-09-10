@@ -224,6 +224,7 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
 
         self.population_list = []
         self.individual_type = TriadIndividual
+        self.fitness = {"min": [], "max": [], "avg": []}
 
     def run_task(self, task):
         r"""Start the optimization.
@@ -289,4 +290,10 @@ class GeneticAlgorithmModified(GeneticAlgorithm):
         for i in self.population_list:
             i.evaluate(task)
 
-        return population_reduced, np.asarray([i.f for i in population_reduced]), best_x, best_fitness, {}
+        population_r_fitness = [i.f for i in population_reduced]
+        self.fitness["min"].append(min(population_r_fitness))
+        self.fitness["avg"].append(sum(population_r_fitness) / len(population_r_fitness))
+        self.fitness["max"].append(max(population_r_fitness))
+        print(self.fitness)
+
+        return population_reduced, np.asarray(population_r_fitness), best_x, best_fitness, {}

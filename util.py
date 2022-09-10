@@ -6,6 +6,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 from Bio.PDB.PDBParser import PDBParser
+from matplotlib import pyplot as plt
 
 parser = PDBParser(PERMISSIVE=1, QUIET=True)
 
@@ -228,3 +229,20 @@ def list_similarities(x):
 def store_fitness_trends(fitness, filepath):
     fitness_df = pd.DataFrame(fitness, columns=["fitness"])
     fitness_df.to_csv(filepath, header=True, index=False)
+
+
+def store_fitness_convergence(fitness, filepath, filepath_plot):
+    fitness_df = pd.DataFrame.from_dict(fitness)
+    fitness_df.to_csv(filepath, header=True, index=False)
+
+    fitness_df = fitness_df
+    plt.plot(fitness_df['min'], label='min', color='orange')
+    plt.plot(fitness_df['avg'], label='average', color='black')
+    plt.plot(fitness_df['max'], label='max', color='blue')
+
+    plt.xlabel('Iterations')
+    plt.ylabel('Fitness')
+    plt.legend()
+    plt.title('Convergence')
+    plt.savefig(filepath_plot)
+

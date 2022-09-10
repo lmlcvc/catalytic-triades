@@ -22,6 +22,7 @@ output = config['output_location']
 encoded_directory = config['encoded_location']
 
 ga_output = config['ga_output_location']
+ga_plots = config['ga_plots_location']
 ga_most_common = config['ga_most_common']
 ga_enzyme_common = config['ga_enzyme_common']
 
@@ -30,7 +31,9 @@ final_population = config['final_population']
 best_occurrences = config['best_occurrences']
 similarity = config['similarity']
 fitness = config['fitness']
+fitness_minmax = config['fitness_minmax']
 plots = config['plots']
+plots_minmax = config['plots_minmax']
 
 HEADER = ['Nuc', 'Acid', 'Base', 'D1', 'D2', 'fitness']
 
@@ -63,16 +66,19 @@ if __name__ == "__main__":
 
     # run genetic algorithm
     util.create_folder(ga_output)
+    util.create_folder(ga_plots)
     util.create_folder(final_population)
     util.create_folder(fitness)
     util.create_folder(plots)
+    util.create_folder(fitness_minmax)
+    util.create_folder(plots_minmax)
     file_most_common = open(os.path.join(ga_output, ga_most_common), 'w+')
 
     most_common_df = pd.DataFrame()
 
-    for i in range(3):
+    for i in range(15):
         task = TaskModified(problem=problem.MostCommonPattern(dimension=5, triads_count=triads_count, method='old'),
-                            max_evals=1000, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_iters=15, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='most_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -82,7 +88,10 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
-        task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
+        task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="iters")
+        util.store_fitness_convergence(fitness=algo.fitness,
+                                       filepath=os.path.join(fitness_minmax, algo.type + str(i).zfill(2) + ".csv"),
+                                       filepath_plot=os.path.join(plots_minmax, algo.type + str(i).zfill(2) + ".png"))
 
         most_common_df = pd.concat([most_common_df, util.get_iteration_info(population=algo.population_list,
                                                                             algo_type=algo.type,
@@ -97,10 +106,10 @@ if __name__ == "__main__":
     file_enzyme_common = open(os.path.join(ga_output, ga_enzyme_common), 'w+')
     enzyme_common_df = pd.DataFrame()
 
-    for i in range(3):
+    for i in range(15):
         task = TaskModified(problem=problem.EnzymeCommonPattern(dimension=5, triads_count=triads_dict_count,
                                                                 triads_count_dict=triads_dict_count, method='old'),
-                            max_evals=150, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
+                            max_iters=10, optimization_type=OptimizationType.MAXIMIZATION, enable_logging=True)
 
         algo = algorithm.GeneticAlgorithmModified(type='enzyme_common', iteration=str(i).zfill(2), population_size=100,
                                                   crossover=algorithm.single_point_crossover,
@@ -110,7 +119,10 @@ if __name__ == "__main__":
                                                   individual_type=problem.TriadIndividual)
 
         algo.run(task=task)
-        task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="evals")
+        task.plot_convergence(algo_type=algo.type, iteration=str(i).zfill(2), output_directory=plots, x_axis="iters")
+        util.store_fitness_convergence(fitness=algo.fitness,
+                                       filepath=os.path.join(fitness_minmax, algo.type + str(i).zfill(2) + ".csv"),
+                                       filepath_plot=os.path.join(plots_minmax, algo.type + str(i).zfill(2) + ".png"))
 
         enzyme_common_df = pd.concat([enzyme_common_df, util.get_iteration_info(population=algo.population_list,
                                                                                 algo_type=algo.type,
@@ -132,3 +144,4 @@ if __name__ == "__main__":
     analysis.store_similarity_best(ga_output, similarity)  # similarity between best individuals
     analysis.store_similarity_population(final_population, similarity)  # similarity between population top 10
     analysis.store_similarity_algorithm(final_population, similarity)  # final populations top 10 similarity
+    analysis.plot_iteration_best_fitness(ga_output, ga_plots)
